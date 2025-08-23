@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | Digital Bac</title>
+  <!-- Reuse your existing fonts/styles -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #f9f9ff;
+    }
+    .privacy-header {
+      background: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%);
+    }
+    .expandable-section {
+      transition: all 0.3s ease;
+    }
+    .expandable-section:hover {
+      transform: translateY(-3px);
+    }
+    .highlight-box {
+      border-right: 4px solid #7e22ce;
+      background: rgba(126, 34, 206, 0.05);
+    }
+  </style>
+</head>
+<body class="text-gray-800">
+  <!-- Header (Reuse your existing header) -->
+  <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between relative">
+            
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden text-blue-600 text-2xl focus:outline-none">
+                ☰
+            </button>
+
+            <!-- Left (Nav links - hidden on mobile) -->
+            <nav class="hidden md:flex space-x-6 space-x-reverse text-sm text-gray-700">
+                <a href="index.html" class="hover:text-blue-600 transition">الرئيسية</a>
+                <a href="about us.html" class="hover:text-blue-600 transition">من نحن</a>
+                <a href="contact us2.html" class="text-blue-600 font-bold transition">اتصل بنا</a>
+            </nav>
+
+            <!-- Logo before Digital Bac -->
+            <div class="absolute right-1/2 translate-x-1/2 flex flex-row-reverse items-center">
+                <img src="image/logo0.png" alt="Logo" class="h-24 w-auto object-contain -mr-1-5" />
+                <h1 class="text-2xl font-bold text-purple-600">Digital Bac</h1>
+            </div>
+
+            <!-- Right (Buttons) -->
+            <div class="hidden md:flex items-center gap-3">
+                <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+                <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-purple-700 transition">سجل الآن</a>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden hidden flex-col gap-4 px-6 py-4 bg-white border-t border-gray-200">
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 transition">الرئيسية</a>
+            <a href="about us.html" class="text-blue-600 font-bold transition">من نحن</a>
+            <a href="contact us2.html" class="text-gray-700 hover:text-blue-600 transition">اتصل بنا</a>
+            <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+            <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-purple-700 transition">سجل الآن</a>
+        </div>
+    </header>
+
+  <!-- Hero Section for Privacy Policy -->
+  <section class="privacy-header text-white py-16">
+    <div class="container mx-auto px-6 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 animate__animated animate__fadeInDown">سياسة الخصوصية</h1>
+      <p class="text-xl opacity-90 max-w-3xl mx-auto animate__animated animate__fadeInUp">
+        نحمي بياناتك الشخصية ونضمن شفافية التعامل مع معلوماتك وفقًا للقوانين التونسية والدولية.
+      </p>
+    </div>
+  </section>
+
+  <!-- Last Updated Notice -->
+  <div class="container mx-auto px-6 py-4 bg-yellow-50 border-r-4 border-yellow-400 max-w-6xl mt-8">
+    <p class="text-yellow-800 font-medium">
+      <i class="fas fa-info-circle mr-2"></i> آخر تحديث: <span id="last-updated">28 جويلية 2025</span>
+    </p>
+  </div>
+
+  <!-- Quick Summary (TL;DR) -->
+  <section class="container mx-auto px-6 py-8 max-w-6xl">
+    <div class="bg-white rounded-xl shadow-md p-6 highlight-box">
+      <h3 class="text-2xl font-bold text-purple-700 mb-4 flex items-center">
+        <i class="fas fa-bolt ml-2"></i> ملخص سريع
+      </h3>
+      <ul class="list-disc pr-5 space-y-2 text-gray-700">
+        <li>نحن <strong>لا نبيع</strong> بياناتك الشخصية لأطراف ثالثة.</li>
+        <li>نجمع فقط البيانات الضرورية لتقديم خدماتنا (مثل البريد الإلكتروني، الاسم، المواد الدراسية).</li>
+        <li>يمكنك طلب حذف بياناتك أو تصحيحها في أي وقت عبر <a href="contact us2.html" class="text-purple-600 underline">اتصل بنا</a>.</li>
+        <li>نستخدم <strong>تشفيرًا متقدمًا</strong> لحماية معلوماتك.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Main Privacy Content -->
+  <main class="container mx-auto px-6 py-8 max-w-6xl space-y-8">
+    <!-- Section 1: Data Collection -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">1. البيانات التي نجمعها</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <p class="mb-4 text-gray-700">نقوم بجمع الأنواع التالية من البيانات:</p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-bold text-purple-600 mb-2"><i class="fas fa-user-circle ml-2"></i> بيانات الهوية</h4>
+            <ul class="list-disc pr-5 text-gray-700 space-y-1">
+              <li>الاسم الكامل</li>
+              <li>البريد الإلكتروني</li>
+              <li>رقم الهاتف</li>
+            </ul>
+          </div>
+          <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-bold text-purple-600 mb-2"><i class="fas fa-book ml-2"></i> بيانات أكاديمية</h4>
+            <ul class="list-disc pr-5 text-gray-700 space-y-1">
+              <li>الشعبة الدراسية (اقتصاد، رياضيات، إلخ)</li>
+              <li>المواد المختارة</li>
+              <li>نتائج الاختبارات (إذا استخدمت المنصة للتدريب)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: How We Use Data -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">2. كيفية استخدام البيانات</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <p class="mb-4 text-gray-700">نستخدم بياناتك للأغراض التالية فقط:</p>
+        <div class="space-y-4">
+          <div class="flex items-start">
+            <div class="bg-purple-100 p-2 rounded-full mr-4">
+              <i class="fas fa-user-graduate text-purple-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-800">تخصيص التجربة التعليمية</h4>
+              <p class="text-gray-700">عرض الدروس والتمارين المناسبة لشعبتك.</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-purple-100 p-2 rounded-full mr-4">
+              <i class="fas fa-shield-alt text-purple-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-800">حماية الحساب</h4>
+              <p class="text-gray-700">الكشف عن الأنشطة المشبوهة أو محاولات الاختراق.</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-purple-100 p-2 rounded-full mr-4">
+              <i class="fas fa-chart-line text-purple-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-800">تحسين المنصة</h4>
+              <p class="text-gray-700">فهم كيفية استخدامك للمنصة لتطوير خدماتنا.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Data Sharing -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">3. مشاركة البيانات مع الغير</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <p class="mb-4 text-gray-700">نحن <strong>لا نبيع</strong> بياناتك لأي طرف خارجي. قد نشارك معلومات محدودة مع:</p>
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+          <h4 class="font-bold text-purple-600 mb-2"><i class="fas fa-users ml-2"></i> الأساتذة المشرفين</h4>
+          <p class="text-gray-700">فقط إذا كنت تستخدم خدمات الدروس الخصوصية عبر المنصة (بموافقتك).</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="font-bold text-purple-600 mb-2"><i class="fas fa-server ml-2"></i> مزودي الخدمة</h4>
+          <p class="text-gray-700">شركات الاستضافة أو الدفع الإلكتروني، مع التزامهم بمعايير الخصوصية.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: User Rights -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">4. حقوقك القانونية</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <p class="mb-4 text-gray-700">وفقا لحقوقك يمكنك :</p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="border border-purple-200 rounded-lg p-4 bg-purple-50">
+            <h4 class="font-bold text-purple-700 mb-2"><i class="fas fa-eye ml-2"></i> طلب الاطلاع</h4>
+            <p class="text-gray-700">الحصول على نسخة من بياناتك الشخصية المخزنة لدينا.</p>
+          </div>
+          <div class="border border-purple-200 rounded-lg p-4 bg-purple-50">
+            <h4 class="font-bold text-purple-700 mb-2"><i class="fas fa-edit ml-2"></i> طلب التصحيح</h4>
+            <p class="text-gray-700">تصحيح أي معلومات غير دقيقة أو غير مكتملة.</p>
+          </div>
+          <div class="border border-purple-200 rounded-lg p-4 bg-purple-50">
+            <h4 class="font-bold text-purple-700 mb-2"><i class="fas fa-trash-alt ml-2"></i> طلب الحذف</h4>
+            <p class="text-gray-700">حذف بياناتك الشخصية (مع بعض الاستثناءات القانونية).</p>
+          </div>
+          <div class="border border-purple-200 rounded-lg p-4 bg-purple-50">
+            <h4 class="font-bold text-purple-700 mb-2"><i class="fas fa-ban ml-2"></i> الاعتراض</h4>
+            <p class="text-gray-700">الاعتراض على معالجة بياناتك في حالات محددة.</p>
+          </div>
+        </div>
+        <div class="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h4 class="font-bold text-blue-700 mb-2"><i class="fas fa-envelope ml-2"></i> كيفية ممارسة حقوقك</h4>
+          <p class="text-gray-700">ارسل طلبك إلى <a href="mailto:privacy@digitalbac.tn" class="text-blue-600 underline">privacy@digitalbac.tn</a> مع تقديم ما يثبت هويتك. سنرد خلال 7 أيام كحد أقصى.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Cookies -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">5. ملفات تعريف الارتباط (Cookies)</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <p class="mb-4 text-gray-700">نستخدم ملفات الكوكيز لتحسين تجربتك على المنصة:</p>
+        <table class="w-full border-collapse mb-6">
+          <thead>
+            <tr class="bg-purple-100">
+              <th class="p-3 border border-purple-200 text-right">النوع</th>
+              <th class="p-3 border border-purple-200 text-right">الغرض</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-3 border border-purple-200 font-medium">الكوكيز الأساسية</td>
+              <td class="p-3 border border-purple-200">تسجيل الدخول وحفظ التفضيلات</td>
+            </tr>
+            <tr class="bg-gray-50">
+              <td class="p-3 border border-purple-200 font-medium">كوكيز الأداء</td>
+              <td class="p-3 border border-purple-200">تحليل استخدام الموقع</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="font-bold text-purple-600 mb-2"><i class="fas fa-cog ml-2"></i> إدارة الكوكيز</h4>
+          <p class="text-gray-700">يمكنك تعديل إعدادات الكوكيز عبر متصفحك أو عبر <button id="cookie-settings-btn" class="text-purple-600 underline">لوحة التحكم</button>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Security -->
+    <section class="expandable-section bg-white rounded-xl shadow-md overflow-hidden">
+      <button class="w-full text-right p-6 flex justify-between items-center focus:outline-none">
+        <h2 class="text-2xl font-bold text-purple-700">6. الأمان</h2>
+        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+      </button>
+      <div class="px-6 pb-6 hidden">
+        <div class="flex items-start mb-6">
+          <div class="bg-green-100 p-3 rounded-full mr-4">
+            <i class="fas fa-lock text-green-600"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-800 mb-2">تشفير البيانات</h4>
+            <p class="text-gray-700">نستخدم تشفير SSL/TLS 256-bit لحماية البيانات المنقولة.</p>
+          </div>
+        </div>
+        <div class="flex items-start">
+          <div class="bg-green-100 p-3 rounded-full mr-4">
+            <i class="fas fa-user-shield text-green-600"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-800 mb-2">الوصول المحدود</h4>
+            <p class="text-gray-700">فريقنا يخضع لتدريب صارم على حماية البيانات.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Contact & Consent Management -->
+  <section class="container mx-auto px-6 py-12 max-w-6xl">
+    <div class="bg-gradient-to-r from-purple-700 to-purple-500 rounded-2xl shadow-xl p-8 text-white">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="md:w-2/3">
+          <h3 class="text-2xl font-bold mb-3">هل لديك استفسارات حول الخصوصية؟</h3>
+          <p>فريق Digital Bac جاهز للإجابة على أسئلتك على <span class="font-bold">privacy@digitalbac.tn</span></p>
+        </div>
+        <div class="md:w-1/3 flex justify-center">
+          <a href="contact us2.html" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+          تحديث إعدادات الخصوصية
+        </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer (Reuse your existing footer) -->
+  <footer style="background: linear-gradient(to left, #623c9e, #8b5cf6); color: white; padding: 50px 20px 20px 20px;">
+    <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; gap: 30px; justify-content: space-between;">
+      <div style="flex: 1 1 250px; min-width: 220px;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+          <img src="image/LOGO1-removebg-preview.png" alt="Digital Bac Logo" style="height: 40px; margin-left: 8px;" />
+          <h3 style="font-size: 1.5rem; margin: 0;">Digital Bac</h3>
+        </div>
+        <p style="line-height: 1.8;">
+          منصة تعليمية احترافية مخصصة لتلاميذ الباكالوريا في تونس.
+        </p>
+      </div>
+      <div style="flex: 1 1 200px; min-width: 180px;">
+        <h4 style="font-size: 1.2rem; margin-bottom: 10px;">روابط سريعة</h4>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="privacy.html" style="color: white; text-decoration: none; display: block; padding: 6px 0; transition: 0.3s;">سياسة الخصوصية</a></li>
+          <li><a href="terms and conditions.html" style="color: white; text-decoration: none; display: block; padding: 6px 0; transition: 0.3s;">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div style="flex: 1 1 220px; min-width: 200px;">
+        <h4 style="font-size: 1.2rem; margin-bottom: 10px;">تواصل معنا</h4>
+        <p style="margin: 6px 0;">📧 privacy@digitalbac.tn</p>
+        <div style="margin-top: 12px;">
+          <a href="https://www.instagram.com/digital__bac/" style="margin-left: 10px; color: white; font-size: 1.3rem;"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 30px 0;">
+    <div style="text-align: center; font-size: 0.9rem;">
+      © 2025 Digital Bac. جميع الحقوق محفوظة.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+
+// Mobile menu toggle
+        const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+    mobileMenu.classList.toggle('flex');
+  });
+
+
+    // Expandable sections
+    document.querySelectorAll('.expandable-section button').forEach(button => {
+      button.addEventListener('click', () => {
+        const section = button.parentElement;
+        const content = button.nextElementSibling;
+        const icon = button.querySelector('i');
+
+        content.classList.toggle('hidden');
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
+      });
+    });
+
+    // Cookie settings modal (simplified)
+    document.getElementById('cookie-settings-btn').addEventListener('click', () => {
+      alert('ستفتح لوحة إعدادات الكوكيز قريبًا. حاليًا، يمكنك تعديلها عبر إعدادات المتصفح.');
+    });
+
+    // Update consent button
+    document.getElementById('update-consent-btn').addEventListener('click', () => {
+      alert('ستتم إضافة هذه الميزة في الإصدارات القادمة! يمكنك مراسلتنا على privacy@digitalbac.tn لطلب التعديلات.');
+    });
+
+  </script>
+</body>
+</html>

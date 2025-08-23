@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home | Digital Bac</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <!-- IBM Plex Sans Arabic Font -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+  }
+</style>
+<!-- AOS Animate on Scroll -->
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+<header class="bg-white shadow-md">
+  <div class="container mx-auto px-4 py-4 flex items-center justify-between relative">
+    
+    <!-- Mobile Menu Button -->
+    <button id="menu-btn" class="md:hidden text-blue-600 text-2xl focus:outline-none">
+      ☰
+    </button>
+
+    <!-- Left (Nav links - hidden on mobile) -->
+    <nav class="hidden md:flex space-x-6 space-x-reverse text-sm text-gray-700">
+      <a href="#" class="hover:text-blue-600 transition">الرئيسية</a>
+      <a href="about us.html" class="hover:text-blue-600 transition">من نحن</a>
+      <a href="contact us2.html" class="hover:text-blue-600 transition">اتصل بنا</a>
+    </nav>
+
+    <!-- Logo before Digital Bac (LTR order even in RTL layout) -->
+<div class="absolute right-1/2 translate-x-1/2 flex flex-row-reverse items-center">
+  <img src="image/logo0.png" alt="Logo" class="h-24 w-auto object-contain -mr-1-5" />
+  <h1 class="text-2xl font-bold text-purple-600">Digital Bac</h1>
+</div>
+
+
+
+    <!-- Right (Buttons) -->
+    <div class="hidden md:flex items-center gap-3">
+      <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+      <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-purple-700 transition">سجل الآن</a>
+    </div>
+  </div>
+
+  <!-- Mobile Menu (hidden by default) -->
+  <div id="mobile-menu" class="md:hidden hidden flex-col gap-4 px-6 py-4 bg-white border-t border-gray-200">
+    <a href="#" class="text-gray-700 hover:text-blue-600 transition">الرئيسية</a>
+    <a href="about us.html" class="text-gray-700 hover:text-blue-600 transition">من نحن</a>
+    <a href="contact us2.html" class="text-gray-700 hover:text-blue-600 transition">اتصل بنا</a>
+    <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+    <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-pruple-700 transition">سجل الآن</a>
+  </div>
+</header>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <!-- Arabic Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <style>
+    .bg-animated {
+  background: linear-gradient(-45deg, #7e22ce, #9333ea, #6b21a8, #7e22ce);
+  background-size: 400% 400%;
+  animation: gradientBG 10s ease infinite;
+}
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+    }
+    body, html {
+  overflow-x: hidden;
+}
+  </style>
+</head>
+
+<body class="text-gray-800">
+
+  <!-- Hero Section -->
+  <section class="bg-animated text-white py-20 relative overflow-hidden">
+    <div class="container mx-auto px-6 flex flex-col-reverse md:flex-row items-center justify-between gap-12 relative z-10">
+      
+      <!-- Left: Image -->
+      <div class="w-full md:w-1/2 animate__animated animate__fadeInLeft">
+        <img src="image/student-hero.png" alt="طالب تونسي" class="rounded-2xl shadow-2xl w-full h-auto max-h-[500px] object-cover">
+      </div>
+
+      <!-- Right: Text -->
+      <div class="w-full md:w-1/2 text-center md:text-right space-y-6 animate__animated animate__fadeInRight">
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight">
+          منصة <span class="text-yellow-300">Digital Bac</span> للباكالوريا
+        </h1>
+        <p class="text-lg text-white/90 leading-relaxed">
+          المنصة الرقمية الأولى في تونس لمساعدة تلاميذ الباكالوريا على التفوق والمراجعة الشاملة في جميع المواد.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center md:justify-end gap-4 pt-4">
+          <a href="contact us2.html" class="bg-white text-blue-700 px-6 py-3 rounded-xl shadow-md hover:bg-gray-100 transition duration-300">اتصل بنا</a>
+          <a href="about us.html" class="border border-white text-white px-6 py-3 rounded-xl hover:bg-white/10 transition duration-300">من نحن</a>
+        </div>
+      </div>
+
+    </div>
+    <!-- Optional white overlay for clarity -->
+    <div class="absolute inset-0 bg-black/10 backdrop-blur-sm z-0"></div>
+  </section>
+<!-- Platform Features -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-14">
+      <h3 class="text-4xl font-extrabold bg-gradient-to-r from-purple-700 via-fuchsia-600 to-purple-500 text-transparent bg-clip-text">
+        ميزات منصتنا التعليمية
+      </h3>
+    </div>
+
+    <div class="space-y-16">
+      <!-- Feature 1 -->
+      <div class="flex flex-col md:flex-row items-center gap-10" data-aos="fade-left">
+        <div class="md:w-1/2 text-right space-y-4">
+          <h4 class="text-2xl font-bold text-purple-700">محتوى موجه ومبني على البرنامج الرسمي</h4>
+          <p class="text-gray-700 text-lg leading-relaxed">
+            نقدم دروسا ومراجعات تغطي كل المواد الأساسية لتلاميذ الباك، بأسلوب مبسط ومنظم.
+          </p>
+        </div>
+        <div class="md:w-1/2">
+          <img src="image/1.jpg" alt="دروس رسمية" class="rounded-2xl shadow-lg w-full max-w-md mx-auto">
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="flex flex-col md:flex-row-reverse items-center gap-10" data-aos="fade-right">
+        <div class="md:w-1/2 text-right space-y-4">
+          <h4 class="text-2xl font-bold text-purple-700">إشراف من أساتذة تونسيين محترفين</h4>
+          <p class="text-gray-700 text-lg leading-relaxed">
+            كل المحتوى تم إعداده بمساعدة مدرسين متمكنين لضمان الجودة والمصداقية.
+          </p>
+        </div>
+        <div class="md:w-1/2">
+          <img src="image/3.jpg" alt="أساتذة تونسيين" class="rounded-2xl shadow-lg w-full max-w-md mx-auto">
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="flex flex-col md:flex-row items-center gap-10" data-aos="fade-left">
+        <div class="md:w-1/2 text-right space-y-4">
+          <h4 class="text-2xl font-bold text-purple-700">سهولة التصفح على جميع الأجهزة</h4>
+          <p class="text-gray-700 text-lg leading-relaxed">
+            سواء على الهاتف أو الحاسوب، منصتنا مصممة لتكون سهلة الاستخدام وسريعة الاستجابة.
+          </p>
+        </div>
+        <div class="md:w-1/2">
+          <img src="image/2.jpg" alt="سهولة التصفح" class="rounded-2xl shadow-lg w-full max-w-md mx-auto">
+        </div>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="flex flex-col md:flex-row-reverse items-center gap-10" data-aos="fade-right">
+        <div class="md:w-1/2 text-right space-y-4">
+          <h4 class="text-2xl font-bold text-purple-700">دعم دائم وإرشاد تعليمي</h4>
+          <p class="text-gray-700 text-lg leading-relaxed">
+            فريقنا يرافق التلاميذ خطوة بخطوة للإجابة عن استفساراتهم وتقديم الدعم المناسب.
+          </p>
+        </div>
+        <div class="md:w-1/2">
+          <img src="image/A_professor_that_helps_his_students_to_get_in_the_top.jpg" alt="دعم دائم" class="rounded-2xl shadow-lg w-full max-w-md mx-auto">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- How It Works Section with Animated Background -->
+<section class="py-24 relative overflow-hidden" id="how-it-works">
+  <!-- Animated Background -->
+  <div class="absolute inset-0 bg-gradient-to-br from-purple-200 via-indigo-200 to-purple-100 animate-gradientMove z-0"></div>
+  <div class="absolute inset-0 bg-white/70 backdrop-blur-md z-0"></div>
+
+  <div class="container mx-auto px-4 relative z-10">
+    <!-- Title -->
+    <div class="text-center mb-20">
+      <h2 class="text-4xl font-extrabold text-purple-800 mb-3">كيف تعمل المنصة؟</h2>
+      <p class="text-lg text-gray-700">خطوات بسيطة لتبدأ رحلتك الدراسية بكل ثقة</p>
+    </div>
+
+    <!-- Steps -->
+    <div class="relative grid md:grid-cols-3 gap-12 text-center">
+      <div class="hidden md:block absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between z-0 px-8">
+        <div class="w-12 h-1 bg-purple-300"></div>
+        <div class="w-12 h-1 bg-purple-300"></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="bg-white z-10 rounded-3xl shadow-xl p-10 hover:shadow-2xl transition duration-300" data-aos="fade-up">
+        <div class="relative mb-6 w-20 h-20 mx-auto">
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold animate-bounce">1</div>
+          <img src="https://cdn-icons-png.flaticon.com/512/7476/7476990.png" alt="Sign Up" class="w-16 h-16 mx-auto">
+        </div>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">سجّل حسابك</h3>
+        <p class="text-gray-700 leading-relaxed">ابدأ بخطوة سهلة وسريعة عبر إنشاء حساب مجاني باستخدام بريدك الإلكتروني.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bg-white z-10 rounded-3xl shadow-xl p-10 hover:shadow-2xl transition duration-300" data-aos="fade-up" data-aos-delay="100">
+        <div class="relative mb-6 w-20 h-20 mx-auto">
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold animate-bounce">2</div>
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135763.png" alt="Choose Subject" class="w-16 h-16 mx-auto">
+        </div>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">اختر المواد</h3>
+        <p class="text-gray-700 leading-relaxed">استعرض الدروس حسب شعبة الباكالوريا واختر المواد التي ترغب في مراجعتها.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bg-white z-10 rounded-3xl shadow-xl p-10 hover:shadow-2xl transition duration-300" data-aos="fade-up" data-aos-delay="200">
+        <div class="relative mb-6 w-20 h-20 mx-auto">
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold animate-bounce">3</div>
+          <img src="https://cdn-icons-png.flaticon.com/512/10759/10759247.png" alt="Start Learning" class="w-16 h-16 mx-auto">
+        </div>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">ابدأ التعلم</h3>
+        <p class="text-gray-700 leading-relaxed">استفد من الفيديوهات، الملخصات، والتمارين التفاعلية مع متابعة مستواك.</p>
+      </div>
+    </div>
+
+    <!-- Call to Action Button -->
+    <div class="text-center mt-16">
+      <a href="inscription.html" class="inline-block bg-purple-600 text-white text-lg font-semibold px-8 py-3 rounded-xl shadow-md hover:bg-purple-700 transition duration-300">
+        سجّل الآن
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Custom Animated Gradient CSS -->
+<style>
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradientMove {
+    background-size: 300% 300%;
+    animation: gradientMove 12s ease infinite;
+  }
+</style>
+<!-- Sections Overview -->
+<section class="py-20 bg-gray-50" id="sections">
+  <div class="container mx-auto px-4">
+    <!-- Title -->
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-pink-500 to-purple-600">
+        كل الشعب متوفرة
+      </h2>
+      <p class="text-lg text-gray-700 mt-2">دروس شاملة لكل الشعب مع تنظيم احترافي وواجهة سهلة الاستخدام</p>
+    </div>
+
+    <!-- Sections Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
+      
+      <!-- الاقتصاد -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in">
+        <!-- Realistic money/balance scale icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M12 1v22M5 21h14M5 11h14M5 3h14M8 3v18M16 3v18"/>
+          <circle cx="12" cy="11" r="3"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة الاقتصاد والتصرف</h3>
+        <p class="text-gray-600 text-sm mb-4">موارد مخصصة لدروس الاقتصاد والمحاسبة والإدارة</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+      <!-- الرياضيات -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in" data-aos-delay="100">
+        <!-- Realistic math/geometry icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M3 21v-6l9-11 9 11v6H3z"/>
+          <path d="M9 21v-6h6v6"/>
+          <path d="M9 10h6"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة الرياضيات</h3>
+        <p class="text-gray-600 text-sm mb-4">شروحات معمقة وتمارين في الجبر، التحليل، والهندسة</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+      <!-- الآداب -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in" data-aos-delay="200">
+        <!-- Realistic book and pen icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M2 7v10a2 2 0 002 2h12l4-4V7a2 2 0 00-2-2H4a2 2 0 00-2 2z"/>
+          <path d="M16 3l4 4M12 11l4-4M8 15l8-8"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة الآداب</h3>
+        <p class="text-gray-600 text-sm mb-4">دروس في الفلسفة، العربية، الفرنسية والتاريخ</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+      <!-- علوم الإعلامية -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in" data-aos-delay="300">
+        <!-- Realistic laptop/code icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
+          <path d="M16 10l-4 4 4 4"/>
+          <path d="M8 10l4 4-4 4"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة علوم الإعلامية</h3>
+        <p class="text-gray-600 text-sm mb-4">برمجة، خوارزميات، أنظمة معلومات مع تطبيقات عملية</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+      <!-- علوم التقنية -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in" data-aos-delay="400">
+        <!-- Realistic gear/engineering icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.77 1.77 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.77 1.77 0 00-1.82-.33 1.77 1.77 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.77 1.77 0 00-1-1.51 1.77 1.77 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.77 1.77 0 00.33-1.82 1.77 1.77 0 00-1.51-1H3a2 2 0 010-4h.09a1.77 1.77 0 001.51-1 1.77 1.77 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.77 1.77 0 001.82.33h.01a1.77 1.77 0 001-1.51V3a2 2 0 014 0v.09a1.77 1.77 0 001 1.51h.01a1.77 1.77 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.77 1.77 0 00-.33 1.82v.01a1.77 1.77 0 001.51 1H21a2 2 0 010 4h-.09a1.77 1.77 0 00-1.51 1z"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة العلوم التقنية</h3>
+        <p class="text-gray-600 text-sm mb-4">فيزياء تطبيقية، إلكترونيك، وتصميم هندسي</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+      <!-- علوم تجريبية -->
+      <div class="bg-white rounded-3xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 text-center" data-aos="zoom-in" data-aos-delay="500">
+        <!-- Realistic chemistry flask icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4" width="64" height="64" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M6 3h12v2l-6 9v7l-4-4v-5l-2-4V3z"/>
+          <path d="M9 21h6"/>
+        </svg>
+        <h3 class="text-xl font-bold text-purple-700 mb-2">شعبة العلوم التجريبية</h3>
+        <p class="text-gray-600 text-sm mb-4">فيزياء، كيمياء، علوم طبيعية وتمارين تجريبية</p>
+        <a href="#" class="text-purple-600 font-semibold hover:underline">عرض الدروس</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- FAQ Section -->
+<section id="faq" style="padding: 60px 20px; background-color: #f9f9ff;">
+  <div style="max-width: 900px; margin: auto; background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); padding: 40px 30px;">
+
+    <h2 style="text-align:center; font-size: 2.5rem; margin-bottom: 40px; color: #623c9e;">الأسئلة الشائعة</h2>
+
+    <!-- FAQ Items -->
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>كيف أسجل في المنصة؟</span>
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer" hidden>
+        يمكنك التسجيل بسهولة عن طريق النقر على زر "تسجيل" في الأعلى وملء نموذج التسجيل بالمعلومات المطلوبة.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>هل يمكنني استخدام حساب واحد على أكثر من جهاز؟</span>
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer" hidden>
+        لا، لا يمكن استخدام الحساب نفسه على أكثر من جهاز في نفس الوقت للحفاظ على أمان الحساب والمحتوى.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>ما هي المواد المتوفرة؟</span>
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer" hidden>
+        نغطي جميع الشعب مثل الاقتصاد، الرياضيات، الآداب، العلوم الإعلامية، العلوم التقنية، والعلوم التجريبية.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>هل الدورات تفاعلية؟</span>
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer" hidden>
+        نعم، تحتوي الدورات على تمارين وأسئلة تفاعلية تساعدك على الفهم بشكل أفضل.
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center; margin-top: 40px;">
+      <p>لا تجد إجابتك؟ <a href="contact us2.html" style="color:#2980b9; text-decoration:none; font-weight:bold;">تواصل معنا</a></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Styles -->
+<style>
+  .faq-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+  }
+  .faq-question {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: right;
+    padding: 15px 10px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #34495e;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+  .faq-question:hover {
+    background: #f1f0fa;
+    border-radius: 8px;
+    color: #623c9e;
+  }
+  .faq-icon {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #623c9e;
+    transition: transform 0.3s ease;
+  }
+  .faq-question[aria-expanded="true"] .faq-icon {
+    transform: rotate(45deg);
+  }
+  .faq-answer {
+    font-size: 1rem;
+    color: #555;
+    padding: 0 10px 10px 10px;
+    line-height: 1.6;
+    animation: fadeSlide 0.3s ease-out;
+  }
+  @keyframes fadeSlide {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .faq-question {
+      font-size: 1rem;
+      padding: 12px 8px;
+    }
+    .faq-answer {
+      font-size: 0.95rem;
+    }
+  }
+</style>
+
+<!-- JS -->
+<script>
+  document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      // Close all
+      document.querySelectorAll('.faq-question').forEach(btn => {
+        btn.setAttribute('aria-expanded', 'false');
+        btn.nextElementSibling.hidden = true;
+      });
+      // Toggle current
+      if (!expanded) {
+        button.setAttribute('aria-expanded', 'true');
+        button.nextElementSibling.hidden = false;
+      }
+    });
+  });
+</script>
+
+
+
+  <!-- Newsletter -->
+  <section class="py-16 bg-white">
+    <div class="container mx-auto px-4 text-center">
+      <h3 class="text-2xl font-bold text-purple-600 mb-4">اشترك في النشرة الإخبارية</h3>
+      <p class="mb-6 text-gray-600">كن أول من يعرف عن الدورات الجديدة والعروض الخاصة.</p>
+      <form class="max-w-xl mx-auto flex flex-col md:flex-row items-center gap-4">
+        <input type="email" placeholder="أدخل بريدك الإلكتروني" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+        <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">اشترك الآن</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+<footer style="background: linear-gradient(to left, #623c9e, #8b5cf6); color: white; padding: 50px 20px 20px 20px; font-family: 'Segoe UI', Tahoma, sans-serif;">
+  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; gap: 30px; justify-content: space-between;">
+
+    <!-- About -->
+    <div style="flex: 1 1 250px; min-width: 220px;">
+      <div style="display: flex; align-items: center; margin-bottom: 15px;">
+  <img src="image/LOGO1-removebg-preview.png" alt="Digital Bac Logo" style="height: 40px;  margin-left: 8px;" />
+  <h3 style="font-size: 1.5rem; margin: 0; color: white;">Digital Bac</h3>
+</div>
+      <p style="line-height: 1.8;">
+        منصة تعليمية احترافية مخصصة لتلاميذ الباكالوريا في تونس، نوفر دروساً تفاعلية، تمارين، وإرشادات تساعدك على النجاح.
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div style="flex: 1 1 200px; min-width: 180px;">
+      <h4 style="font-size: 1.2rem; margin-bottom: 10px;">روابط سريعة</h4>
+      <ul style="list-style: none; padding: 0;">
+        <li><a href="privacy policy.html" style="color: white; text-decoration: none; display: block; padding: 6px 0; transition: 0.3s;">سياسة الخصوصية</a></li>
+        <li><a href="terms and conditions.html" style="color: white; text-decoration: none; display: block; padding: 6px 0; transition: 0.3s;">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div style="flex: 1 1 220px; min-width: 200px;">
+      <h4 style="font-size: 1.2rem; margin-bottom: 10px;">تواصل معنا</h4>
+      <p style="margin: 6px 0;">📧 support@digitalbac.com</p>
+      <p style="margin: 6px 0;">📞 999 310 27 +216</p>
+      <div style="margin-top: 12px;">
+        <a href="#" style="margin-left: 10px; color: white; font-size: 1.3rem;"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/digital__bac/" style="margin-left: 10px; color: white; font-size: 1.3rem;"><i class="fab fa-instagram"></i></a>
+        <a href="#" style="margin-left: 10px; color: white; font-size: 1.3rem;"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+
+  </div>
+
+  <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 30px 0;">
+
+  <div style="text-align: center; font-size: 0.9rem;">
+    © 2025 Digital Bac. جميع الحقوق محفوظة.
+  </div>
+</footer>
+
+<!-- Font Awesome (required for social icons) -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<script>
+  const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+    mobileMenu.classList.toggle('flex');
+  });
+</script>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+</body>
+</html>

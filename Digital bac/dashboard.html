@@ -1,0 +1,6559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Bac</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'ar',
+        includedLanguages: 'en,fr,es',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <head>
+<script>
+
+// Login with Email/Password
+async function login(email, password) {
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    currentUser = userCredential.user;
+    await loadUserData(currentUser.uid);
+    return true;
+  } catch (error) {
+    console.error("Login error:", error);
+    return false;
+  }
+}
+
+// Sign Up
+async function signUp(email, password, name, section) {
+  try {
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    await db.collection('users').doc(userCredential.user.uid).set({
+      name: name,
+      email: email,
+      section: section,
+      phone: section,
+      subscription: {
+        type: "free",
+        expires: null
+      }
+    });
+    currentUser = userCredential.user;
+    await loadUserData(currentUser.uid);
+    return true;
+  } catch (error) {
+    console.error("Signup error:", error);
+    return false;
+  }
+}
+
+// Load user data from Firestore
+async function loadUserData(userId) {
+  const doc = await db.collection('users').doc(userId).get();
+  if (doc.exists) {
+    currentUser.data = doc.data();
+  }
+}
+
+// Check subscription status
+function checkSubscription() {
+  if (!currentUser?.data?.subscription) return false;
+  const sub = currentUser.data.subscription;
+  if (sub.type === "free") return false;
+  return new Date(sub.expires) > new Date();
+}
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    // Get courses for user's section
+async function getCoursesForUser() {
+  if (!currentUser?.data?.section) return [];
+  const snapshot = await db.collection('courses')
+    .where('section', '==', currentUser.data.section)
+    .get();
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// Get videos for a course
+async function getCourseVideos(courseId) {
+  const snapshot = await db.collection('courses')
+    .doc(courseId)
+    .collection('videos')
+    .get();
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// Get assignments for user's section
+async function getAssignmentsForUser() {
+  if (!currentUser?.data?.section) return [];
+  const courses = await getCoursesForUser();
+  let assignments = [];
+  
+  for (const course of courses) {
+    const snapshot = await db.collection('courses')
+      .doc(course.id)
+      .collection('assignments')
+      .get();
+      
+    assignments = assignments.concat(
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        courseTitle: course.title
+      }))
+    );
+  }
+  
+  return assignments;
+}
+// Process payment (simplified - integrate with real payment gateway)
+async function processPayment(subscriptionType) {
+  const subDoc = await db.collection('subscriptions')
+    .where('type', '==', subscriptionType)
+    .get();
+    
+  if (subDoc.empty) return false;
+  
+  const subData = subDoc.docs[0].data();
+  const expires = new Date();
+  expires.setDate(expires.getDate() + subData.duration);
+  
+  await db.collection('users').doc(currentUser.uid).update({
+    subscription: {
+      type: subscriptionType,
+      expires: firebase.firestore.Timestamp.fromDate(expires)
+    }
+  });
+  
+  await loadUserData(currentUser.uid);
+  return true;
+}
+// Load and display courses
+async function loadUserContent() {
+  if (!currentUser) return;
+  
+  // Load user data
+  document.getElementById('username').textContent = currentUser.data.name;
+  document.getElementById('user-section').textContent = currentUser.data.section;
+  
+  // Load courses
+  const courses = await getCoursesForUser();
+  const coursesGrid = document.querySelector('.courses-grid');
+  coursesGrid.innerHTML = '';
+  
+  for (const course of courses) {
+    const videos = await getCourseVideos(course.id);
+    
+    const courseHTML = `
+      <div class="course-card">
+        <div class="course-image">
+          <img src="${course.thumbnail}" alt="${course.title}">
+        </div>
+        <div class="course-content">
+          <h3>${course.title}</h3>
+          <p>${course.teacher}</p>
+          
+          <div class="course-videos">
+            <h4>الفيديوهات</h4>
+            ${videos.map(video => `
+              <div class="video-item">
+                <div class="video-thumbnail" 
+                     data-course-id="${course.id}"
+                     data-video-id="${video.id}">
+                  <i class="fas fa-play"></i>
+                  <span>${video.title} (${video.duration})</span>
+                  ${video.free ? '' : '<i class="fas fa-lock"></i>'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    coursesGrid.insertAdjacentHTML('beforeend', courseHTML);
+  }
+  
+  // Load assignments
+  const assignments = await getAssignmentsForUser();
+  const assignmentsContainer = document.querySelector('.assignments-container');
+  assignmentsContainer.innerHTML = '';
+  
+  assignments.forEach(assignment => {
+    assignmentsContainer.insertAdjacentHTML('beforeend', `
+      <div class="assignment-card">
+        <h4>${assignment.title}</h4>
+        <p>المادة: ${assignment.courseTitle}</p>
+        <p>موعد التسليم: ${new Date(assignment.due.toDate()).toLocaleDateString('ar-EG')}</p>
+      </div>
+    `);
+  });
+}
+  </script>
+  <style>
+    :root {
+      --primary: #6C4AB6;
+      --primary-light: #8D72E1;
+      --secondary: #FF9B9B;
+      --dark: #1E1E2D;
+      --light: #F5F7FA;
+      --success: #4BB543;
+      --warning: #FFCC00;
+      --error: #FF3333;
+      --sidebar-width: 300px;
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ===== Base Styles ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      max-width: 100%;
+      overflow-x: hidden;
+      transition: all 0.5s ease;
+    }
+
+    body.dark-mode {
+      background: linear-gradient(135deg, #1E1E2D 0%, #2D2D42 100%);
+      color: #fff;
+      --glass-bg: rgba(30, 30, 45, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ===== Glassmorphism Effect ===== */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== Floating Particles Background ===== */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(108, 74, 182, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite linear;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+    }
+
+    /* ===== Sidebar (Neon Style) ===== */
+    .sidebar {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: rgba(30, 30, 45, 0.8);
+      backdrop-filter: blur(10px);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .sidebar-brand h2 {
+      font-size: 1.3rem;
+      background: linear-gradient(45deg, #8D72E1, #FF9B9B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+      padding: 1.5rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(108, 74, 182, 0.3), transparent);
+      transition: all 0.6s ease;
+    }
+
+    .menu-item:hover::before {
+      right: 100%;
+    }
+
+    .menu-item:hover, .menu-item.active {
+      background: rgba(108, 74, 182, 0.2);
+      color: white;
+      transform: translateX(-5px);
+    }
+
+    .menu-item.active {
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .menu-item i {
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+      padding: 2px;
+    }
+
+    .user-info h4 {
+      font-size: 0.95rem;
+      margin-bottom: 3px;
+    }
+
+    .user-info small {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+    }
+
+    /* ===== Main Content ===== */
+    .main-content {
+      margin-right: var(--sidebar-width);
+      padding: 2rem;
+      min-height: 100vh;
+      transition: all 0.4s ease;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.8rem;
+      background: linear-gradient(45deg, #6C4AB6, #8D72E1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.3rem;
+    }
+
+    .header-title p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    body.dark-mode .header-title p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--light);
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    body.dark-mode .theme-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .notification-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--light);
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    body.dark-mode .notification-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 18px;
+      height: 18px;
+      background: var(--error);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      z-index: 1001;
+    }
+
+    /* ===== Dashboard Stats ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      padding: 1.5rem;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-card .icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+
+    .stat-card:nth-child(1) {
+      background: linear-gradient(135deg, #6C4AB6, #8D72E1);
+      color: white;
+    }
+
+    .stat-card:nth-child(2) {
+      background: linear-gradient(135deg, #4BB543, #8DDE87);
+      color: white;
+    }
+
+    .stat-card:nth-child(3) {
+      background: linear-gradient(135deg, #FF9B9B, #FFCC00);
+      color: white;
+    }
+
+    .stat-card h3 {
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card p {
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+
+    /* ===== Premium Banner ===== */
+    .premium-banner {
+      background: linear-gradient(135deg, #1E1E2D, #2D2D42);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      color: white;
+    }
+
+    .premium-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(108, 74, 182, 0.1) 0%, transparent 70%);
+      animation: rotate 15s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .premium-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .premium-text h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, #FF9B9B, #FFCC00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .premium-text p {
+      opacity: 0.8;
+      margin-bottom: 1rem;
+      max-width: 500px;
+    }
+
+    .premium-btn {
+      background: linear-gradient(45deg, #FF9B9B, #FFCC00);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .premium-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(255, 155, 155, 0.3);
+    }
+
+    /* ===== Courses Section ===== */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      right: 0;
+      width: 50%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+      border-radius: 3px;
+    }
+
+    body.dark-mode .section-title::after {
+      background: linear-gradient(90deg, var(--primary-light), transparent);
+    }
+
+    .view-all {
+      color: var(--primary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    body.dark-mode .view-all {
+      color: var(--primary-light);
+    }
+
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .course-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    body.dark-mode .course-card {
+      background: rgba(30, 30, 45, 0.6);
+    }
+
+    .course-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: var(--success);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    .course-image {
+      height: 160px;
+      background: linear-gradient(45deg, #6C4AB6, #8D72E1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .course-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .course-content {
+      padding: 1.5rem;
+    }
+
+    .course-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+
+    body.dark-mode .course-title {
+      color: white;
+    }
+
+    .course-teacher {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    body.dark-mode .course-teacher {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .teacher-avatar {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .course-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .course-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #666;
+    }
+
+    body.dark-mode .course-meta span {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .course-meta i {
+      color: var(--primary);
+    }
+
+    body.dark-mode .course-meta i {
+      color: var(--primary-light);
+    }
+
+    .course-progress {
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+      color: #666;
+    }
+
+    body.dark-mode .progress-text {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    body.dark-mode .progress-bar {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    body.dark-mode .progress-fill {
+      background: var(--primary-light);
+    }
+
+    .course-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-family: 'Tajawal';
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      flex: 1;
+    }
+
+    body.dark-mode .btn-primary {
+      background: var(--primary-light);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 74, 182, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    body.dark-mode .btn-outline {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    .btn-outline:hover {
+      background: rgba(108, 74, 182, 0.1);
+    }
+
+    /* ===== Calendar Section ===== */
+    .calendar-container {
+      margin-bottom: 3rem;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    .calendar-nav-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: var(--light);
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    body.dark-mode .calendar-nav-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      direction: rtl;
+    }
+
+    .calendar-day-header {
+      text-align: center;
+      font-weight: 700;
+      padding: 0.5rem;
+      color: var(--primary);
+    }
+
+    body.dark-mode .calendar-day-header {
+      color: var(--primary-light);
+    }
+
+    .calendar-day {
+      background: var(--glass-bg);
+      border-radius: 10px;
+      padding: 0.8rem;
+      min-height: 80px;
+      border: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+    }
+
+    .calendar-day:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-number {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .calendar-event {
+      background: var(--primary-light);
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      margin-top: 5px;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .calendar-event.exam {
+      background: var(--error);
+    }
+
+    .calendar-event.assignment {
+      background: var(--warning);
+      color: var(--dark);
+    }
+
+    .calendar-event.lesson {
+      background: var(--success);
+    }
+
+    /* ===== Exam Countdown ===== */
+    .exam-countdown {
+      background: linear-gradient(135deg, #6C4AB6, #8D72E1);
+      color: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .countdown-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1rem;
+    }
+
+    .countdown-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .countdown-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .countdown-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    /* ===== Leaderboard Section ===== */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 3rem;
+    }
+
+    .leaderboard-table th {
+      background: var(--primary);
+      color: white;
+      padding: 1rem;
+      text-align: right;
+    }
+
+    body.dark-mode .leaderboard-table th {
+      background: var(--primary-light);
+    }
+
+    .leaderboard-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .leaderboard-table td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .leaderboard-table tr:nth-child(even) {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    body.dark-mode .leaderboard-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .leaderboard-table tr:hover {
+      background: rgba(108, 74, 182, 0.1);
+    }
+
+    .rank {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    body.dark-mode .rank {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .rank-1 {
+      background: gold;
+      color: var(--dark);
+    }
+
+    .rank-2 {
+      background: silver;
+      color: var(--dark);
+    }
+
+    .rank-3 {
+      background: #cd7f32; /* bronze */
+      color: var(--dark);
+    }
+
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .student-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* ===== Progress Chart ===== */
+    .progress-chart {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    body.dark-mode .progress-chart {
+      background: rgba(30, 30, 45, 0.6);
+    }
+
+    .chart-container {
+      height: 300px;
+      width: 100%;
+      position: relative;
+    }
+
+    /* ===== Page Content ===== */
+    .page-content {
+      display: none;
+    }
+
+    .page-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+      
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Assignments Page ===== */
+    .assignments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .assignment-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    body.dark-mode .assignment-card {
+      background: rgba(30, 30, 45, 0.6);
+    }
+
+    .assignment-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .assignment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .assignment-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .assignment-due {
+      background: var(--warning);
+      color: var(--dark);
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .assignment-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    body.dark-mode .assignment-meta {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .assignment-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .assignment-meta i {
+      color: var(--primary);
+    }
+
+    body.dark-mode .assignment-meta i {
+      color: var(--primary-light);
+    }
+
+    .assignment-progress {
+      margin-bottom: 1.5rem;
+    }
+
+    .assignment-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ===== Exams Page ===== */
+    .exams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .exam-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    body.dark-mode .exam-card {
+      background: rgba(30, 30, 45, 0.6);
+    }
+
+    .exam-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .exam-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .exam-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .exam-date {
+      background: var(--error);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .exam-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    body.dark-mode .exam-meta {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .exam-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .exam-meta i {
+      color: var(--primary);
+    }
+
+    body.dark-mode .exam-meta i {
+      color: var(--primary-light);
+    }
+
+    .exam-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ===== Progress Page ===== */
+    .progress-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .progress-stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    body.dark-mode .progress-stat-card {
+      background: rgba(30, 30, 45, 0.6);
+    }
+
+    .progress-stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-stat-title {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    body.dark-mode .progress-stat-title {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .progress-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .progress-stat-change {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .progress-stat-change.positive {
+      color: var(--success);
+    }
+
+    .progress-stat-change.negative {
+      color: var(--error);
+    }
+
+    /* ===== Floating Help Button ===== */
+    .help-button {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(45deg, #6C4AB6, #8D72E1);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 10px 25px rgba(108, 74, 182, 0.3);
+      cursor: pointer;
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+
+    .help-button:hover {
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 15px 30px rgba(108, 74, 182, 0.4);
+    }
+
+    /* ===== Notification Panel ===== */
+    .notification-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 350px;
+      height: 100vh;
+      background: white;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      transform: translateX(-100%);
+      transition: all 0.4s ease;
+      z-index: 1100;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    body.dark-mode .notification-panel {
+      background: var(--dark);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .notification-panel.active {
+      transform: translateX(0);
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .notification-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .close-notifications {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--dark);
+    }
+
+    body.dark-mode .close-notifications {
+      color: white;
+    }
+
+    .notification-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 10px;
+    }
+
+    body.dark-mode .notification-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .notification-content h4 {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .notification-content p {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    body.dark-mode .notification-content p {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .notification-time {
+      font-size: 0.7rem;
+      color: #999;
+    }
+
+    body.dark-mode .notification-time {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 1200px) {
+      .sidebar {
+        transform: translateX(100%);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-right: 0;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .premium-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+      }
+      .courses-grid, .assignments-grid, .exams-grid {
+        grid-template-columns: 1fr;
+      }
+      .countdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .notification-panel {
+        width: 280px;
+      }
+    }
+    .top-controls {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  display: flex;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.top-controls button {
+  background: #ad09df;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(105, 9, 129, 0.1);
+  transition: background 0.3s;
+}
+
+.top-controls button:hover {
+  background: #8606a7;
+}
+
+body.dark-mode .top-controls button {
+  background: #333;
+  color: #ae11ce;
+}
+
+body.dark-mode .top-controls button:hover {
+  background: #9e0cca;
+}
+#page-info-container {
+  display: none;
+}
+
+@media (max-width: 576px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .courses-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .countdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .calendar-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .calendar-day-header {
+        font-size: 0.8rem;
+      }
+      
+      .course-card {
+        margin-bottom: 1rem;
+      }
+      
+      .header-title h1 {
+        font-size: 1.5rem;
+      }
+      
+      .premium-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .premium-btn {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .calendar-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    /* Performance optimizations */
+    .particle {
+      will-change: transform;
+    }
+    
+    .glass-card {
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    #toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #fff;
+    animation: fadeInOut 3s ease forwards;
+    min-width: 250px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .toast-success { background: #4BB543; }
+  .toast-error { background: #e74c3c; }
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-20px) translateX(-50%); }
+    10% { opacity: 1; transform: translateY(0) translateX(-50%); }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-20px) translateX(-50%); }
+  }
+
+/* Live Section Styles */
+.live-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.live-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.hero-content h1 {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-description {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.hero-illustration img {
+  width: 300px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Navigation Tabs */
+.live-navigation-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding-bottom: 0.5rem;
+}
+
+body.dark-mode .live-navigation-tabs {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.tab-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'Tajawal';
+  font-weight: 500;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+body.dark-mode .tab-btn {
+  color: rgba(255,255,255,0.7);
+}
+
+.tab-btn.active {
+  background: var(--primary-light);
+  color: white;
+}
+
+.tab-btn:hover:not(.active) {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+/* Filter Bar */
+.live-filter-bar {
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #666;
+}
+
+body.dark-mode .filter-group label {
+  color: rgba(255,255,255,0.7);
+}
+
+.styled-select {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  font-family: 'Tajawal';
+  min-width: 150px;
+  cursor: pointer;
+}
+
+body.dark-mode .styled-select {
+  background: rgba(30, 30, 45, 0.8);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.filter-reset-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  font-family: 'Tajawal';
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+body.dark-mode .filter-reset-btn {
+  background: rgba(30, 30, 45, 0.8);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.teachers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.teacher-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(108,74,182,0.07);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: box-shadow 0.3s;
+  max-width: 100%;
+}
+body.dark-mode .teacher-card {
+  background: rgba(30,30,45,0.7);
+}
+.teacher-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  margin-bottom: 1rem;
+  position: relative;
+}
+.teacher-live-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--error);
+  color: #fff;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 2;
+}
+.teacher-name {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.3rem;
+}
+.teacher-subject {
+  background: var(--primary-light);
+  color: #fff;
+  border-radius: 50px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.7rem;
+}
+.teacher-bio {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+.teacher-card .btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.enhanced-live-badge {
+  position: absolute !important;
+  left: 50% !important;
+  top: auto !important;
+  bottom: -18px !important;
+  transform: translateX(-50%);
+  background: var(--error);
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(231,76,60,0.15);
+  z-index: 2;
+  letter-spacing: 1px;
+  border: 2px solid #fff;
+}
+
+  /* Loader overlay */
+  #loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85); /* Transparent white so background is visible */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+
+  /* Logo styling */
+  .loader-logo {
+    width: 120px; /* Adjust size */
+    height: 120px;
+    animation: spin 2s linear infinite; /* Spin effect */
+  }
+
+  /* Spin animation */
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Hide loader */
+  #loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @media (max-width: 900px) {
+  .calendar-container {
+    overflow-x: auto;
+  }
+  .calendar-grid {
+    min-width: 600px;
+    width: max-content;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+@media (max-width: 480px) {
+  .calendar-container {
+    overflow-x: auto;
+  }
+  .calendar-grid {
+    min-width: 420px;
+    width: max-content;
+    grid-template-columns: repeat(7, 1fr) !important;
+  }
+}
+  </style>
+</head>
+<body>
+
+<!-- Full Page Loader -->
+<div id="loader">
+    <img src="image/logo0.png" alt="Logo" class="loader-logo" />
+</div>
+
+  <script>
+async function apiFetch(url, options = {}) {
+  let token = localStorage.getItem('token');
+  if (!options.headers) options.headers = {};
+  options.headers['Authorization'] = `Bearer ${token}`;
+  options.headers['Content-Type'] = 'application/json';
+
+  let res = await fetch(url, options);
+  if (res.status === 401) {
+    console.warn('Token expired. Trying to refresh...');
+    const refreshRes = await fetch('http://localhost:5000/api/auth/refresh-token', {
+      method: 'POST',
+      credentials: 'include' // needed to send refreshToken cookie
+    });
+
+    if (refreshRes.ok) {
+      const data = await refreshRes.json();
+      localStorage.setItem('token', data.token); // save new token
+      options.headers['Authorization'] = `Bearer ${data.token}`;
+      res = await fetch(url, options); // retry request
+    } else {
+      alert('جلسة المستخدم انتهت. الرجاء تسجيل الدخول مرة أخرى.');
+      window.location.href = 'login.html';
+      throw new Error('Session expired');
+    }
+  }
+
+  return res;
+}
+</script>
+  
+  <!-- Floating Particles Background -->
+  <div class="particles"></div>
+
+  <!-- Notification Panel -->
+  <div class="notification-panel" id="notification-panel">
+    <div class="notification-header">
+      <h3 class="notification-title">الإشعارات</h3>
+      <button class="close-notifications" id="close-notifications">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="notification-item">
+      <div class="notification-icon">
+        <i class="fas fa-book"></i>
+      </div>
+      <div class="notification-content">
+        <h4>درس جديد متاح</h4>
+        <p>تم إضافة درس جديد في مادة الرياضيات: الدوال الأسية</p>
+        <div class="notification-time">منذ ساعتين</div>
+      </div>
+    </div>
+    
+    
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <img src="image/logo0.png" alt="Digital Bac" class="logo">
+        <h2>Digital Bac</h2>
+      </div>
+    </div>
+
+    <div class="sidebar-menu">
+      <a href="#" class="menu-item active" data-target="dashboard">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="#" class="menu-item" data-target="courses">
+        <i class="fas fa-book-open"></i>
+        <span>دروسي</span>
+      </a>
+      <a href="#" class="menu-item" data-target="assignments">
+        <i class="fas fa-tasks"></i>
+        <span>الواجبات</span>
+      </a>
+      <a href="#" class="menu-item" data-target="live">
+  <i class="fas fa-video"></i>
+  <span>البث المباشر</span>
+</a>
+      <a href="#" class="menu-item" data-target="exams">
+        <i class="fas fa-clipboard-check"></i>
+        <span>الاختبارات</span>
+      </a>
+      <a href="#" class="menu-item" data-target="wallet-section">
+      <i class="fas fa-wallet"></i>
+      <span>محفظة النقود</span>
+    </a>
+      <a href="#" class="menu-item" data-target="progress">
+        <i class="fas fa-chart-line"></i>
+        <span>تقدمي</span>
+      </a>
+      <a href="#" class="menu-item" data-target="premium">
+        <i class="fas fa-crown"></i>
+        <span>العضوية المميزة</span>
+      </a>
+      <a href="#" class="menu-item" data-target="settings">
+        <i class="fas fa-cog"></i>
+        <span>الإعدادات</span>
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <img id="sidebar-user-image" src="https://via.placeholder.com/45x45?text=MA" alt="User" class="user-avatar">
+        <div class="user-info">
+          <h4 id="sidebar-user-name">محمد علي</h4>
+          <small id="sidebar-user-section">شعبة الرياضيات</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <!-- Header --> 
+     <div class="header-title">
+        <div id="page-info-container">
+        <h1 id="page-title"></h1>
+        <p id="page-description"></p>
+      </div>
+      
+        <!-- Unified Recharge Card -->
+         <div id="toast-container"></div>
+        
+<section id="wallet-section" dir="rtl" style="display: none; font-family: 'Tajawal', sans-serif; max-width: 100%; overflow: hidden;">
+  <div class="glass-card" style="padding: 2rem; border-radius: 16px; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h2 style="color: #6C4AB6; margin: 0;">محفظة النقود</h2>
+      <div style="flex: 0 0 auto; background: linear-gradient(135deg, #f8f4ff, #f0e8ff); 
+            padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(108, 74, 182, 0.1);
+            display: flex; flex-direction: column; align-items: flex-start; 
+            border: 1px solid rgba(108, 74, 182, 0.2); position: relative; overflow: hidden;
+            min-width: 280px; height: 180px;">
+  
+  <!-- Decorative elements -->
+  <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; 
+              background: rgba(108, 74, 182, 0.05); border-radius: 50%;"></div>
+  
+  <div style="position: absolute; bottom: -30px; left: -30px; width: 100px; height: 100px; 
+              background: rgba(141, 114, 225, 0.05); border-radius: 50%;"></div>
+  
+  <!-- Content -->
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; z-index: 1;">
+    <i class="fas fa-wallet" style="font-size: 1.5rem; color: #6C4AB6;"></i>
+    <h3 style="color: #6C4AB6; margin: 0; font-size: 1.1rem;">رصيدك الحالي</h3>
+  </div>
+  
+  <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: auto; z-index: 1;">
+    <span style="font-size: 2.5rem; font-weight: 700; color: #6C4AB6;" id="wallet-balance-display">0</span>
+    <span style="font-size: 1.2rem; color: #8D72E1;">نقاط</span>
+  </div>
+  
+  <div style="align-self: flex-end; z-index: 1;">
+    <img src="https://cdn-icons-png.flaticon.com/512/921/921347.png" alt="wallet" 
+         style="width: 80px; opacity: 0.8; filter: hue-rotate(15deg);">
+  </div>
+  
+  <!-- Status indicator -->
+  <div style="position: absolute; top: 1rem; left: 1rem; background: rgba(75, 181, 67, 0.1); 
+              color: #4BB543; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.8rem;
+              display: flex; align-items: center; gap: 5px;">
+    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+    نشط
+  </div>
+      </div>
+
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <!-- Payment Methods Section with Interactive Selection -->
+       <div id="payment-form-container" style="max-width: 100%; overflow-x: hidden;">
+  <div class="glass-card" style="padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; max-width: 100%;">
+    <h3 style="margin-bottom: 1.5rem; color: #6C4AB6; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <i class="fas fa-credit-card"></i>
+      <span>اختر طريقة الدفع</span>
+    </h3>
+
+    <div id="payment-methods-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+      <!-- D17 Method -->
+      <div onclick="selectPaymentMethod('d17')" class="payment-method" data-method="d17">
+        <img src="image/logod17bnk.png" alt="D17">
+        <div style="font-weight: bold; font-size: 0.95rem;">D17</div>
+      </div>
+
+      <!-- PayPal Method -->
+      <div onclick="selectPaymentMethod('paypal')" class="payment-method" data-method="paypal">
+        <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="PayPal">
+        <div style="font-weight: bold; font-size: 0.95rem;">PayPal</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Form Section -->
+<div class="glass-card" style="background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 15px rgba(0,0,0,0.05); max-width: 100%; overflow: hidden;">
+  <h3 style="margin-bottom: 1.5rem; color: #6C4AB6; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <i class="fas fa-coins"></i>
+    <span id="payment-form-title">إعدادات الشحن</span>
+  </h3>
+
+  <div id="wallet-balance-display"></div>
+
+  <div id="payment-config-form">
+    <form onsubmit="submitPaymentConfig(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div>
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">المبلغ (نقاط)</label>
+        <input type="number" id="configAmount" min="1" required 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal';">
+      </div>
+
+      <div>
+        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">رقم المرجع</label>
+        <input type="text" id="configReference" required 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal';"
+               placeholder="رقم العملية أو المعرف">
+      </div>
+
+      <div id="payment-method-info" style="background: #f9f9f9; padding: 1rem; border-radius: 12px; margin-top: 1rem; display: none;">
+        <h4 style="margin-bottom: 0.5rem; color: #6C4AB6; display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-check-circle" style="color: #4BB543;"></i>
+          <span>طريقة الدفع المحددة</span>
+        </h4>
+        <p style="color: #666; font-size: 0.95rem;" id="selected-method-desc"></p>
+      </div>
+
+      <button type="submit" id="rechargeButton"
+              style="margin-top: 1rem; background: linear-gradient(45deg, #6C4AB6, #8D72E1); color: white; 
+                     padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+                     display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fas fa-paper-plane"></i>
+        تأكيد عملية الشحن
+      </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<style>
+  .payment-method {
+    cursor: pointer;
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex: 1 1 250px; /* ✅ allows responsive resizing */
+  }
+  
+  .payment-method:hover {
+    transform: scale(1.03);
+    box-shadow: 0 5px 15px rgba(108, 74, 182, 0.1);
+  }
+  
+  .payment-method.selected {
+    background: linear-gradient(135deg, rgba(108, 74, 182, 0.1), rgba(141, 114, 225, 0.1));
+    border-color: #6C4AB6;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(108, 74, 182, 0.15);
+  }
+  
+  .payment-method.selected i,
+  .payment-method.selected span {
+    color: #6C4AB6;
+  }
+  
+  .payment-method img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+  }
+  
+  .payment-method.selected img {
+    transform: scale(1.1);
+  }
+
+  /* ✅ Payment methods container: responsive grid */
+.payment-methods-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+  
+  .payment-method i {
+    font-size: 2.2rem;
+    color: #666;
+    transition: all 0.3s ease;
+  }
+  
+  .payment-method span {
+    font-weight: 600;
+    color: #555;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+  }
+
+  .payment-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0;
+  font-family: 'Tajawal', sans-serif;
+  
+}
+
+.payment-table th {
+  background: #6C4AB6;
+  color: white;
+  padding: 15px;
+  text-align: right;
+  position: sticky;
+  top: 0;
+}
+
+.payment-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+  white-space: nowrap; /* ✅ keeps text tidy */
+}
+
+.payment-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.payment-table tr:hover {
+  background-color: #f0e8ff;
+}
+
+.payment-table .status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-failed {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.reference-code {
+  font-family: monospace;
+  direction: ltr;
+  display: inline-block;
+}
+
+
+.live-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+body.dark-mode .live-card {
+  background: rgba(30, 30, 45, 0.6);
+}
+
+.live-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.live-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: var(--error);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.live-image {
+  height: 160px;
+  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.live-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.live-content {
+  padding: 1.5rem;
+}
+
+.live-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+body.dark-mode .live-title {
+  color: white;
+}
+
+.live-teacher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+body.dark-mode .live-teacher {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.live-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.live-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+}
+
+body.dark-mode .live-meta span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.live-meta i {
+  color: var(--primary);
+}
+
+body.dark-mode .live-meta i {
+  color: var(--primary-light);
+}
+
+.live-actions {
+  display: flex;
+  gap: 10px;
+}
+
+#live-stream-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 2000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#live-video-player {
+  width: 80%;
+  max-width: 900px;
+  background: black;
+}
+
+.live-controls {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.live-controls button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#end-live-btn {
+  background: var(--error);
+  color: white;
+}
+
+#live-chat {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  display: none;
+  flex-direction: column;
+  max-height: 500px;
+}
+
+body.dark-mode #live-chat {
+  background: var(--dark);
+}
+
+.live-chat-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.dark-mode .live-chat-header {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.live-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.live-chat-input {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+}
+
+body.dark-mode .live-chat-input {
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.live-chat-input input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+}
+
+body.dark-mode .live-chat-input input {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.live-chat-input button {
+  padding: 10px 15px;
+  border-radius: 50px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  #wallet-section > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+  #payment-form-container,
+  #wallet-section > div > .glass-card {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #wallet-section {
+    padding: 0.5rem !important;
+  }
+  #wallet-section .glass-card {
+    padding: 1rem !important;
+    border-radius: 10px !important;
+  }
+  #wallet-section h2,
+  #wallet-section h3 {
+    font-size: 1.1rem !important;
+  }
+  #wallet-section img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  #wallet-section input,
+  #wallet-section select,
+  #wallet-section button {
+    font-size: 1rem !important;
+    padding: 10px !important;
+  }
+  #wallet-section .payment-method {
+    padding: 1rem !important;
+    gap: 8px !important;
+  }
+  #wallet-section .payment-method img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #payment-methods-container {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .payment-table {
+    font-size: 0.95rem;
+    min-width: 400px;
+  }
+  #wallet-section .glass-card {
+    overflow-x: auto;
+  }
+}
+
+</style>
+  <!-- Payment History Section -->
+  <div class="glass-card" style="padding: 2rem; border-radius: 16px;">
+    <h3 style="margin-bottom: 1.5rem; color: #6C4AB6; display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-history"></i>
+      <span>سجل المعاملات</span>
+    </h3>
+    
+    <div style="overflow-x: auto;">
+      <table class="payment-table" style="width: 100%; border-collapse: collapse;">
+        <thead style="background: #6C4AB6; color: white;">
+          <tr>
+            <th style="padding: 12px; text-align: right;">التاريخ</th>
+            <th style="padding: 12px; text-align: right;">المبلغ</th>
+            <th style="padding: 12px; text-align: right;">الطريقة</th>
+            <th style="padding: 12px; text-align: right;">الحالة</th>
+            <th style="padding: 12px; text-align: right;">الرقم المرجعي</th>
+          </tr>
+        </thead>
+  
+        <tbody id="transactionHistory">
+        
+          <tr>
+            
+            <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+              <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+              لا توجد معاملات حالياً
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+
+
+
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  if (currentUser) {
+  // Sidebar info
+  const userNameEl = document.getElementById("sidebar-user-name");
+  const userSectionEl = document.getElementById("sidebar-user-section");
+  const userImageEl = document.getElementById("sidebar-user-image");
+
+  if (userNameEl) userNameEl.textContent = currentUser.name;
+  if (userSectionEl) userSectionEl.textContent = currentUser.section || "غير محددة";
+  if (userImageEl && currentUser.image) userImageEl.src = currentUser.image;
+
+  // Settings page fields (if exist)
+  const nameInput = document.getElementById("settings-name");
+  const phoneInput = document.getElementById("settings-phone");
+  const sectionInput = document.getElementById("settings-section");
+
+  if (nameInput) nameInput.value = currentUser.name;
+  if (phoneInput) phoneInput.value = currentUser.phone || "";
+  if (sectionInput) sectionInput.value = currentUser.section || "";
+} else {
+  // If no user found, redirect to login
+  window.location.href = "login.html";
+}
+</script>
+
+  <script>
+ 
+
+   const API_BASE_URL = "http://localhost:5000";
+
+// Payment Methods
+const paymentMethods = {
+  d17: { name: "D17", desc: "شحن عبر خدمة D17", icon: "image/logod17bnk.png" },
+  paypal: { name: "PayPal", desc: "شحن باستخدام حساب PayPal", icon: "https://cdn-icons-png.flaticon.com/512/196/196566.png" }
+};
+
+let selectedPaymentMethod = null;
+let isSubmitting = false;
+
+/* -----------------------------
+   Load Wallet Data (Balance + History)
+-------------------------------- */
+async function loadWalletData() {
+  try {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!token) {
+      console.warn("No token found. User must log in.");
+      document.getElementById('wallet-balance-display').textContent = '—';
+      document.getElementById('transactionHistory').innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--error);">
+            ⚠️ الرجاء تسجيل الدخول لعرض المحفظة
+          </td>
+        </tr>`;
+      return;
+    }
+
+    if (!user || !user.id) {
+      console.error("No valid user found in localStorage:", user);
+      document.getElementById('wallet-balance-display').textContent = '—';
+      document.getElementById('transactionHistory').innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--error);">
+            ❌ لم يتم العثور على بيانات المستخدم
+          </td>
+        </tr>`;
+      return;
+    }
+
+    // Show temporary loading state
+    document.getElementById('wallet-balance-display').textContent = '...';
+    document.getElementById('transactionHistory').innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+          <i class="fas fa-spinner fa-spin"></i> جاري التحميل...
+        </td>
+      </tr>`;
+
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    const [balanceRes, historyRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/wallet/balance/${user.id}`, { headers }),
+      fetch(`${API_BASE_URL}/api/wallet/history/${user.id}`, { headers })
+    ]);
+
+    // Debugging responses
+    if (!balanceRes.ok) {
+      const errorText = await balanceRes.text();
+      console.error("Balance API error:", errorText);
+      throw new Error("Failed to load balance: " + errorText);
+    }
+    if (!historyRes.ok) {
+      const errorText = await historyRes.text();
+      console.error("History API error:", errorText);
+      throw new Error("Failed to load history: " + errorText);
+    }
+
+    const [balanceData, historyData] = await Promise.all([
+      balanceRes.json(),
+      historyRes.json()
+    ]);
+
+    console.log("Balance data:", balanceData);
+    console.log("History data:", historyData);
+
+    // Update UI
+    updateWalletDisplay(balanceData.balance);
+    renderTransactionHistory(historyData);
+
+  } catch (error) {
+    console.error("Wallet load error:", error);
+    document.getElementById('wallet-balance-display').textContent = '—';
+    document.getElementById('transactionHistory').innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; color: var(--error);">
+          ❌ تعذر تحميل معلومات المحفظة<br>
+          <small>${error.message}</small>
+        </td>
+      </tr>`;
+  }
+}
+
+/* -----------------------------
+   Update Wallet UI
+-------------------------------- */
+function updateWalletDisplay(balance) {
+  const balanceElement = document.getElementById('wallet-balance-display');
+  const dashboardBalance = document.getElementById('wallet-balance');
+
+  balanceElement.textContent = balance;
+  if (dashboardBalance) {
+    dashboardBalance.textContent = `${balance} د.ت`;
+  }
+
+  // Animation feedback
+  balanceElement.style.transform = "scale(1.1)";
+  balanceElement.style.color = "#4BB543";
+  setTimeout(() => {
+    balanceElement.style.transform = "scale(1)";
+    balanceElement.style.color = "#6C4AB6";
+  }, 500);
+}
+
+/* -----------------------------
+   Render Transaction History
+-------------------------------- */
+function renderTransactionHistory(transactions) {
+  const tbody = document.getElementById('transactionHistory');
+  tbody.innerHTML = '';
+
+  if (!transactions?.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+          <i class="fas fa-inbox"></i>
+          لا توجد معاملات حالياً
+        </td>
+      </tr>`;
+    return;
+  }
+
+  transactions.forEach(tx => {
+    let statusText = '—';
+    let statusColor = '#999';
+
+    if (tx.status.includes('pending') || tx.status.includes('انتظار')) {
+      statusText = '🕓 قيد الانتظار';
+      statusColor = '#856404';
+    } else if (tx.status.includes('مكتمل') || tx.status.includes('success')) {
+      statusText = '✅ مكتمل';
+      statusColor = '#4BB543';
+    } else if (tx.status.includes('مرفوض') || tx.status.includes('refused')) {
+      statusText = '❌ مرفوض';
+      statusColor = '#e74c3c';
+    }
+
+     const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="padding: 15px;">${new Date(tx.createdAt).toLocaleDateString('ar-TN')}</td>
+      <td style="color: #4BB543;" ;"padding: 15px;">+${tx.amount} دت</td>
+      <td style="padding: 15px;">${tx.method}</td>
+      <td>
+        <span style="background: #f7f7f7; color: ${statusColor};
+              padding: 4px 8px; border-radius: 50px; font-size: 0.8rem;" ;"padding: 15px;">
+          ${statusText}
+        </span>
+      </td>
+      <td style="font-family: monospace;" , "padding: 15px;">${tx.reference || tx.referenceCode || '—'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+/* -----------------------------
+   Submit Payment
+-------------------------------- */
+async function submitPaymentConfig(event) {
+  event.preventDefault();
+  if (isSubmitting) return;
+
+  isSubmitting = true;
+  const form = event.target;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const originalText = submitButton.innerHTML;
+
+  try {
+    if (!selectedPaymentMethod) {
+      showToast("❌ الرجاء اختيار طريقة الدفع أولاً");
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!token || !user) throw new Error("يجب تسجيل الدخول أولاً");
+
+    const amount = document.getElementById("configAmount").value;
+    const reference = document.getElementById("configReference").value;
+
+    // UI Lock
+    submitButton.disabled = true;
+    form.querySelectorAll('input, button').forEach(el => el.disabled = true);
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
+
+    // API Request
+    const res = await fetch(`${API_BASE_URL}/api/wallet/add-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ amount, method: selectedPaymentMethod, reference })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'فشل في معالجة الدفع');
+
+    // Refresh Wallet & History
+    await loadWalletData();
+
+    showToast(`✅ تم استلام طلبك بنجاح\nرقم المرجع: ${reference}`, "success");
+
+    // Reset Form
+    form.reset();
+    document.getElementById("payment-method-info").style.display = "none";
+    document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+    selectedPaymentMethod = null;
+
+  } catch (err) {
+    console.error('Payment error:', err);
+    showToast(`❌ خطأ: ${err.message}`, "error");
+  } finally {
+    // Unlock UI
+    submitButton.innerHTML = originalText;
+    form.querySelectorAll('input, button').forEach(el => el.disabled = false);
+    isSubmitting = false;
+  }
+}
+
+/* -----------------------------
+   Payment Method Selection
+-------------------------------- */
+function selectPaymentMethod(method) {
+  document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+
+  selectedPaymentMethod = method;
+  const methodElement = document.querySelector(`.payment-method[data-method="${method}"]`);
+  if (methodElement) methodElement.classList.add('selected');
+
+  const methodInfo = paymentMethods[method];
+  if (!methodInfo) return;
+
+  document.getElementById("payment-form-title").textContent = `إعدادات الشحن عبر ${methodInfo.name}`;
+  document.getElementById("selected-method-name").innerHTML = `
+    <i class="fas fa-check-circle" style="color: #4BB543;"></i>
+    ${methodInfo.name}
+  `;
+  document.getElementById("selected-method-desc").textContent = methodInfo.desc;
+  document.getElementById("payment-method-info").style.display = "block";
+}
+
+/* -----------------------------
+   Initialize on Page Load
+-------------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (user) loadWalletData();
+
+  const paymentForm = document.getElementById('payment-config-form')?.querySelector('form');
+  if (paymentForm) paymentForm.addEventListener('submit', submitPaymentConfig);
+
+  document.querySelectorAll('.payment-method').forEach(el => {
+    el.addEventListener('click', () => selectPaymentMethod(el.dataset.method));
+  });
+});
+
+
+</script>
+
+
+
+
+      <div class="top-controls">
+        <button class="theme-toggle" id="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="notification-btn" id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">1</span>
+        </button>
+        <button class="menu-toggle" id="menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    
+  <!-- Dashboard Page - Modified Version -->
+  <div class="page-content active" id="dashboard-page" style="max-width: 100%; overflow: hidden;">
+    <!-- Dashboard Stats -->
+    <div class="stats-grid">
+      <div class="stat-card glass-card" data-aos="fade-up">
+        <div class="icon">
+          <i class="fas fa-book"></i>
+        </div>
+        <h3></h3>
+        <p>الدروس المكتملة</p>
+      </div>
+        
+        <div class="stat-card glass-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <h3></h3>
+        <p>الواجبات المسلمة</p>
+      </div>
+        
+        <div class="stat-card glass-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3>100%</h3>
+        <p>معدل التقدم</p>
+      </div>
+
+      <div class="stat-card glass-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="icon">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <h3 id="wallet-balance">0 د.ت</h3>
+        <p>رصيد محفظتك</p>
+      </div>
+    </div>
+
+
+      <!-- Premium Banner -->
+    <div class="premium-banner glass-card" data-aos="fade-up">
+      <div class="premium-content">
+        <div class="premium-text">
+          <h2>ترقى إلى العضوية المميزة</h2>
+          <p>احصل على وصول غير محدود إلى جميع الدروس المتقدمة، الاختبارات التجريبية، وجلسات الدعم الفردي مع الأساتذة.</p>
+        </div>
+        <button class="premium-btn">
+          <i class="fas fa-crown"></i>
+          اشترك الآن
+        </button>
+      </div>
+    </div>
+
+      <!-- Courses Section -->
+    <div class="courses-section">
+      <div class="section-header">
+        <h2 class="section-title">الدروس الحديثة</h2>
+        <a href="#" class="view-all">
+          عرض الكل
+          <i class="fas fa-arrow-left"></i>
+        </a>
+      </div>
+      
+      <div class="courses-grid">
+    
+        
+          <!-- Course 1 -->
+          <div class="course-card glass-card" data-aos="fade-up">
+            <div class="course-badge">جديد</div>
+            <div class="course-image">
+              <i class="fas fa-square-root-alt"></i>
+            </div>
+            <div class="course-content">
+              <h3 class="course-title">الدوال الأسية واللوغاريتمية</h3>
+              <div class="course-teacher">
+                <img src="https://via.placeholder.com/25x25?text=TE" alt="Teacher" class="teacher-avatar">
+                <span>أستاذ أحمد محمد</span>
+              </div>
+              <div class="course-meta">
+                <span><i class="fas fa-clock"></i> 45 دقيقة</span>
+                <span><i class="fas fa-calendar-alt"></i> 15 مايو</span>
+              </div>
+              <div class="course-progress">
+                <div class="progress-text">
+                  <span>التقدم</span>
+                  <span>65%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 65%;"></div>
+                </div>
+              </div>
+              <div class="course-actions">
+                <button class="btn btn-primary">
+                  <i class="fas fa-play"></i>
+                  استمر
+                </button>
+                <button class="btn btn-outline">
+                  <i class="fas fa-info-circle"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        
+          
+          <!-- Course 3 -->
+          <div class="course-card glass-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="course-image" style="background: linear-gradient(45deg, #FF9B9B, #FFCC00);">
+              <i class="fas fa-language"></i>
+            </div>
+            <div class="course-content">
+              <h3 class="course-title">تحليل النصوص الأدبية</h3>
+              <div class="course-teacher">
+                <img src="https://via.placeholder.com/25x25?text=TL" alt="Teacher" class="teacher-avatar">
+                <span>أستاذ ليلى عمر</span>
+              </div>
+              <div class="course-meta">
+                <span><i class="fas fa-clock"></i> 35 دقيقة</span>
+                <span><i class="fas fa-calendar-alt"></i> 10 مايو</span>
+              </div>
+              <div class="course-progress">
+                <div class="progress-text">
+                  <span>التقدم</span>
+                  <span>90%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 90%;"></div>
+                </div>
+              </div>
+              <div class="course-actions">
+                <button class="btn btn-primary">
+                  <i class="fas fa-redo"></i>
+                  مراجعة
+                </button>
+                <button class="btn btn-outline">
+                  <i class="fas fa-info-circle"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exam Countdown -->
+    <div class="exam-countdown glass-card" data-aos="fade-up">
+      <h2 class="countdown-title">العد التنازلي لامتحان البكالوريا</h2>
+      <div class="countdown-grid">
+        <div class="countdown-item">
+          <div class="countdown-value" id="days">45</div>
+          <div class="countdown-label">أيام</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-value" id="hours">12</div>
+          <div class="countdown-label">ساعات</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-value" id="minutes">30</div>
+          <div class="countdown-label">دقائق</div>
+        </div>
+        <div class="countdown-item">
+          <div class="countdown-value" id="seconds">15</div>
+          <div class="countdown-label">ثواني</div>
+        </div>
+      </div>
+    </div>
+
+      <!-- Calendar Section -->
+    <div class="calendar-container" data-aos="fade-up">
+      <div class="section-header">
+        <h2 class="section-title">تقويم الدراسة</h2>
+        <div class="calendar-header">
+          <h3 id="current-month">مايو 2023</h3>
+          <div class="calendar-nav">
+            <button class="calendar-nav-btn" id="prev-month">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <button class="calendar-nav-btn" id="next-month">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+        
+        <div class="calendar-grid">
+          <div class="calendar-day-header">الإثنين</div>
+<div class="calendar-day-header">الثلاثاء</div>
+<div class="calendar-day-header">الأربعاء</div>
+<div class="calendar-day-header">الخميس</div>
+<div class="calendar-day-header">الجمعة</div>
+<div class="calendar-day-header">السبت</div>
+<div class="calendar-day-header">الأحد</div>
+          
+          <!-- Calendar Days -->
+          <div class="calendar-day">
+            <div class="day-number">1</div>
+            <span class="calendar-event exam">اختبار رياضيات</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">2</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">3</div>
+            <span class="calendar-event lesson">درس فيزياء</span>
+          </div>
+          <div class="calendar-day" >
+            <div class="day-number">4</div>
+          </div>
+          <div class="calendar-day" >
+            <div class="day-number">5</div>
+            <span class="calendar-event assignment">موعد تسليم واجب</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">6</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">7</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">8</div>
+            <span class="calendar-event lesson">درس لغة عربية</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">9</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">10</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">11</div>
+            <span class="calendar-event exam">اختبار فلسفة</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">12</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">13</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">14</div>
+            <span class="calendar-event assignment">موعد تسليم واجب</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">15</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">16</div>
+            <span class="calendar-event lesson">درس تاريخ</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">17</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">18</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">19</div>
+            <span class="calendar-event exam">اختبار لغة فرنسية</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">20</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">21</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">22</div>
+            <span class="calendar-event lesson">درس رياضيات</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">23</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">24</div>
+            <span class="calendar-event assignment">موعد تسليم واجب</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">25</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">26</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">27</div>
+            <span class="calendar-event exam">اختبار علوم</span>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">28</div>
+          </div>
+          <div class="calendar-day">
+            <div class="day-number">29</div>
+          </div>
+          <div class="calendar-day" >
+            <div class="day-number">30</div>
+            <span class="calendar-event lesson">درس لغة إنجليزية</span>
+          </div>
+          <div class="calendar-day" >
+            <div class="day-number">31</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Chart Section -->
+    <div class="progress-chart glass-card" data-aos="fade-up">
+      <div class="section-header">
+        <h2 class="section-title">تقدمي الدراسي</h2>
+        <div class="header-actions">
+          <select class="btn btn-outline" style="padding: 0.5rem;">
+            <option>آخر 7 أيام</option>
+            <option>آخر 30 يوم</option>
+            <option>هذا الفصل</option>
+          </select>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="progress-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+    <!-- Courses Page -->
+    <div class="page-content" id="courses-page">
+      <div class="section-header">
+        <h2 class="section-title">جميع الدروس</h2>
+        <div class="header-actions">
+          <select class="btn btn-outline" style="padding: 0.5rem;">
+            <option>الكل</option>
+            <option>الرياضيات</option>
+            <option>الفيزياء</option>
+            <option>اللغة العربية</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="courses-grid">
+        <!-- Course 1 -->
+        <div class="course-card glass-card" data-aos="fade-up">
+          <div class="course-badge">جديد</div>
+          <div class="course-image">
+            <i class="fas fa-square-root-alt"></i>
+          </div>
+          <div class="course-content">
+            <h3 class="course-title">الدوال الأسية واللوغاريتمية</h3>
+            <div class="course-teacher">
+              <img src="https://via.placeholder.com/25x25?text=TE" alt="Teacher" class="teacher-avatar">
+              <span>أستاذ أحمد محمد</span>
+            </div>
+            <div class="course-meta">
+              <span><i class="fas fa-clock"></i> 45 دقيقة</span>
+              <span><i class="fas fa-calendar-alt"></i> 15 مايو</span>
+            </div>
+            <div class="course-progress">
+              <div class="progress-text">
+                <span>التقدم</span>
+                <span>65%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%;"></div>
+              </div>
+            </div>
+            <div class="course-actions">
+              <button class="btn btn-primary">
+                <i class="fas fa-play"></i>
+                استمر
+              </button>
+              <button class="btn btn-outline">
+                <i class="fas fa-info-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+        <!-- Course 3 -->
+        <div class="course-card glass-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="course-image" style="background: linear-gradient(45deg, #FF9B9B, #FFCC00);">
+            <i class="fas fa-language"></i>
+          </div>
+          <div class="course-content">
+            <h3 class="course-title">تحليل النصوص الأدبية</h3>
+            <div class="course-teacher">
+              <img src="https://via.placeholder.com/25x25?text=TL" alt="Teacher" class="teacher-avatar">
+              <span>أستاذ ليلى عمر</span>
+            </div>
+            <div class="course-meta">
+              <span><i class="fas fa-clock"></i> 35 دقيقة</span>
+              <span><i class="fas fa-calendar-alt"></i> 10 مايو</span>
+            </div>
+            <div class="course-progress">
+              <div class="progress-text">
+                <span>التقدم</span>
+                <span>90%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 90%;"></div>
+              </div>
+            </div>
+            <div class="course-actions">
+              <button class="btn btn-primary">
+                <i class="fas fa-redo"></i>
+                مراجعة
+              </button>
+              <button class="btn btn-outline">
+                <i class="fas fa-info-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+        
+      </div>
+    </div>
+
+    <!-- Assignments Page -->
+    <div class="page-content" id="assignments-page">
+      <div class="section-header">
+        <h2 class="section-title">الواجبات المطلوبة</h2>
+        <div class="header-actions">
+          <select class="btn btn-outline" style="padding: 0.5rem;">
+            <option>الكل</option>
+            <option>لم يتم التسليم</option>
+            <option>تم التسليم</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="assignments-grid">
+        
+        <!-- Assignment 2 -->
+        <div class="assignment-card glass-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="assignment-header">
+            <h3 class="assignment-title">تحليل نص أدبي</h3>
+            <span class="assignment-due">بعد غد</span>
+          </div>
+          <div class="assignment-meta">
+            <span><i class="fas fa-language"></i> اللغة العربية</span>
+            <span><i class="fas fa-user"></i> أستاذة ليلى</span>
+          </div>
+          <p>تحليل النص الأدبي في الصفحة 78 مع التركيز على الصور البيانية والأساليب البلاغية</p>
+          <div class="assignment-actions">
+            <button class="btn btn-primary">
+              <i class="fas fa-upload"></i>
+              تسليم الواجب
+            </button>
+          </div>
+        </div>
+        
+        
+        
+        
+        <!-- Assignment 5 -->
+        <div class="assignment-card glass-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="assignment-header">
+            <h3 class="assignment-title">تمارين اللغة الفرنسية</h3>
+            <span class="assignment-due">3 أيام</span>
+          </div>
+          <div class="assignment-meta">
+            <span><i class="fas fa-language"></i> اللغة الفرنسية</span>
+            <span><i class="fas fa-user"></i> أستاذة نادية</span>
+          </div>
+          <p>حل التمارين من 1 إلى 10 في الصفحة 56 حول تصريف الأفعال في الزمن الماضي</p>
+          <div class="assignment-actions">
+            <button class="btn btn-primary">
+              <i class="fas fa-upload"></i>
+              تسليم الواجب
+            </button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Exams Page -->
+    <div class="page-content" id="exams-page">
+      <div class="section-header">
+        <h2 class="section-title">الاختبارات القادمة</h2>
+        <div class="header-actions">
+          <select class="btn btn-outline" style="padding: 0.5rem;">
+            <option>الكل</option>
+            <option>القادمة</option>
+            <option>السابقة</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="exams-grid">
+        <!-- Exam 1 -->
+        <div class="exam-card glass-card" data-aos="fade-up">
+          <div class="exam-header">
+            <h3 class="exam-title">اختبار الرياضيات</h3>
+            <span class="exam-date">غداً</span>
+          </div>
+          <div class="exam-meta">
+            <span><i class="fas fa-book"></i> الفصل الثاني</span>
+            <span><i class="fas fa-clock"></i> ساعة واحدة</span>
+          </div>
+          <p>اختبار يشمل الدوال الأسية واللوغاريتمية وحساب التفاضل مع تطبيقات</p>
+          <div class="exam-actions">
+            <button class="btn btn-primary">
+              <i class="fas fa-book-open"></i>
+              مراجعة
+            </button>
+            <button class="btn btn-outline">
+              <i class="fas fa-info-circle"></i>
+              التفاصيل
+            </button>
+          </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        <!-- Exam 6 -->
+        <div class="exam-card glass-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="exam-header">
+            <h3 class="exam-title">اختبار اللغة الإنجليزية</h3>
+            <span class="exam-date">تم</span>
+          </div>
+          <div class="exam-meta">
+            <span><i class="fas fa-language"></i> الفصل الثالث</span>
+            <span><i class="fas fa-clock"></i> ساعة</span>
+          </div>
+          <p>اختبار في القواعد والمفردات مع قسم للقراءة والفهم</p>
+          <div class="exam-actions">
+            <button class="btn btn-outline">
+              <i class="fas fa-eye"></i>
+              عرض النتيجة
+            </button>
+            <button class="btn btn-outline">
+              <i class="fas fa-info-circle"></i>
+              التفاصيل
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Page -->
+    <div class="page-content" id="progress-page" style="max-width: 100%; overflow: hidden;">
+      <div class="stats-grid">
+        <div class="progress-stat-card glass-card" data-aos="fade-up">
+          <h3 class="progress-stat-title">المعدل العام</h3>
+          <div class="progress-stat-value"></div>
+          <div class="progress-stat">
+            <i class="fas fa"></i>
+          </div>
+        </div>
+        
+        <div class="progress-stat-card glass-card" data-aos="fade-up" data-aos-delay="100">
+          <h3 class="progress-stat-title">النسبة المئوية</h3>
+          <div class="progress-stat-value"></div>
+          <div class="progress-stat-change positive">
+            <i class="fas fa"></i>
+          </div>
+        </div>
+        
+        <div class="progress-stat-card glass-card" data-aos="fade-up" data-aos-delay="200">
+          <h3 class="progress-stat-title">الوقت الدراسي</h3>
+          <div class="progress-stat-value"></div>
+          <div class="progress-stat-change negative">
+            <i class="fas fa"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-chart glass-card" data-aos="fade-up">
+        <div class="section-header">
+          <h2 class="section-title">تقدمي الدراسي</h2>
+          <div class="header-actions">
+            <select class="btn btn-outline" style="padding: 0.5rem;">
+              <option>آخر 7 أيام</option>
+              <option>آخر 30 يوم</option>
+              <option>هذا الفصل</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="detailed-progress-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="progress-chart glass-card" data-aos="fade-up">
+        <div class="section-header">
+          <h2 class="section-title">توزيع الدرجات</h2>
+          <div class="header-actions">
+            <select class="btn btn-outline" style="padding: 0.5rem;">
+              <option>هذا الفصل</option>
+              <option>الفصل الماضي</option>
+              <option>السنة الدراسية</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="grades-distribution-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="leaderboard-section" data-aos="fade-up">
+        <div class="section-header">
+          <h2 class="section-title">تصنيف المواد</h2>
+          <a href="#" class="view-all">
+            عرض الكل
+            <i class="fas fa-arrow-left"></i>
+          </a>
+        </div>
+        
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>المادة</th>
+              <th>المعدل</th>
+              <th>التقدم</th>
+              <th>التصنيف</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="student-info">
+                  <i class="fas fa-square-root-alt" style="color: var(--primary);"></i>
+                  <span>الرياضيات</span>
+                </div>
+              </td>
+              <td>18.50</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 92%;"></div>
+                </div>
+              </td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="student-info">
+                  <i class="fas fa-atom" style="color: var(--primary);"></i>
+                  <span>الفيزياء</span>
+                </div>
+              </td>
+              <td>17.75</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 85%;"></div>
+                </div>
+              </td>
+              <td>5</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="student-info">
+                  <i class="fas fa-language" style="color: var(--primary);"></i>
+                  <span>اللغة العربية</span>
+                </div>
+              </td>
+              <td>18.25</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 90%;"></div>
+                </div>
+              </td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="student-info">
+                  <i class="fas fa-brain" style="color: var(--primary);"></i>
+                  <span>الفلسفة</span>
+                </div>
+              </td>
+              <td>17.00</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 80%;"></div>
+                </div>
+              </td>
+              <td>7</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="student-info">
+                  <i class="fas fa-landmark" style="color: var(--primary);"></i>
+                  <span>التاريخ</span>
+                </div>
+              </td>
+              <td>18.00</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 88%;"></div>
+                </div>
+              </td>
+              <td>4</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+
+<div class="page-content" id="live-page">
+
+  <!-- Filter Bar at the Top -->
+  <div class="live-filter-bar glass-card" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem;">
+    <label for="subject-select" style="font-weight: 600; font-size: 1.1rem; color: var(--primary); margin-left: 1rem;">
+      <i class="fas fa-book"></i> اختر المادة:
+    </label>
+    <select id="subject-select" class="styled-select" style="min-width: 180px;">
+      <option>جارٍ التحميل...</option>
+    </select>
+  </div>
+
+  <!-- Live Teachers Section -->
+  <div>
+    <h2 class="section-title" style="margin-bottom: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-chalkboard-teacher"></i>
+      اختر معلمك للبث المباشر
+    </h2>
+    <div id="live-teachers-container" class="teachers-grid" style="min-height: 120px;">
+      <!-- Teacher cards will be rendered here -->
+    </div>
+  </div>
+
+  <!-- Upcoming Live Sessions -->
+  <div class="glass-card" style="padding: 1.5rem; margin-top: 2rem; margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; color: var(--primary);">
+      <i class="fas fa-calendar-alt"></i>
+      جلسات البث القادمة
+    </h3>
+    <div id="upcoming-live-container" class="courses-grid"></div>
+  </div>
+
+  <!-- Past Recordings -->
+  <div class="glass-card" style="padding: 1.5rem;">
+    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; color: var(--primary);">
+      <i class="fas fa-video"></i>
+      التسجيلات السابقة
+    </h3>
+    <div id="past-recordings-container" class="courses-grid"></div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    <!-- Leaderboard Page -->
+    <div class="page-content" id="leaderboard-page">
+      <div class="leaderboard-section" data-aos="fade-up">
+        <div class="section-header">
+          <h2 class="section-title">تصنيف الطلاب</h2>
+          <div class="header-actions">
+            <select class="btn btn-outline" style="padding: 0.5rem;">
+              <option>الشعبة أ</option>
+              <option>الشعبة ب</option>
+              <option>المستوى الوطني</option>
+            </select>
+          </div>
+        </div>
+        
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>المركز</th>
+              <th>الطالب</th>
+              <th>المعدل</th>
+              <th>التقدم</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="rank rank-1">1</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S1" alt="Student" class="student-avatar">
+                  <span>علي حسن</span>
+                </div>
+              </td>
+              <td>18.75</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 95%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank rank-2">2</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S2" alt="Student" class="student-avatar">
+                  <span>فاطمة الزهراء</span>
+                </div>
+              </td>
+              <td>18.25</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 91%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank rank-3">3</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=MA" alt="Student" class="student-avatar">
+                  <span>محمد علي</span>
+                </div>
+              </td>
+              <td>17.90</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 87%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank">4</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S4" alt="Student" class="student-avatar">
+                  <span>أمينة عبد الله</span>
+                </div>
+              </td>
+              <td>17.50</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 83%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank">5</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S5" alt="Student" class="student-avatar">
+                  <span>يوسف أحمد</span>
+                </div>
+              </td>
+              <td>17.25</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 80%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank">6</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S6" alt="Student" class="student-avatar">
+                  <span>سارة محمد</span>
+                </div>
+              </td>
+              <td>17.00</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 78%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank">7</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S7" alt="Student" class="student-avatar">
+                  <span>خالد أمين</span>
+                </div>
+              </td>
+              <td>16.75</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="rank">8</div>
+              </td>
+              <td>
+                <div class="student-info">
+                  <img src="https://via.placeholder.com/35x35?text=S8" alt="Student" class="student-avatar">
+                  <span>نورا سعيد</span>
+                </div>
+              </td>
+              <td>16.50</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 72%;"></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="progress-chart glass-card" data-aos="fade-up">
+        <div class="section-header">
+          <h2 class="section-title">مقارنة الأداء</h2>
+          <div class="header-actions">
+            <select class="btn btn-outline" style="padding: 0.5rem;">
+              <option>هذا الفصل</option>
+              <option>الفصل الماضي</option>
+              <option>السنة الدراسية</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="performance-comparison-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Subscription Section -->
+<div class="page-content" id="premium-page">
+  <!-- Hero Banner -->
+  <div class="premium-hero glass-card" data-aos="fade-up">
+    <div class="hero-content">
+      <h1 class="hero-title">ارتقِ بمستوى تعليمك مع العضوية المميزة</h1>
+      <p class="hero-subtitle">احصل على وصول غير محدود إلى جميع الدروس المتقدمة، الاختبارات التجريبية، وجلسات الدعم الفردي مع الأساتذة.</p>
+      <div class="hero-badge">
+        <span class="badge-text">الأكثر اختياراً</span>
+        <i class="fas fa-crown"></i>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="https://img.icons8.com/color/480/classroom.png" alt="Premium Membership">
+    </div>
+  </div>
+
+  <!-- Current Plan Status - Redesigned -->
+<div class="current-plan-container glass-card" data-aos="fade-up">
+  <div class="plan-status">
+    <div class="status-icon">
+      <i class="fas fa-chart-line"></i>
+    </div>
+    <div class="status-info">
+      <h3>حالة اشتراكك</h3>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 30%;"></div>
+        </div>
+        <span class="progress-text">30% من تجربتك المجانية</span>
+      </div>
+      <p class="status-desc">قم بالترقية الآن للوصول الكامل إلى جميع الميزات</p>
+    </div>
+  </div>
+  <button class="btn btn-upgrade" id="upgrade-btn">
+    <i class="fas fa-gem"></i> ترقية إلى المميز
+  </button>
+</div>
+
+  <!-- Subscription Tabs -->
+  <div class="subscription-tabs" data-aos="fade-up">
+    <button class="tab-btn active" data-tab="monthly">الباقات الشهرية</button>
+    <button class="tab-btn" data-tab="yearly">الباقات السنوية</button>
+    <div class="tab-indicator"></div>
+  </div>
+
+  <!-- Monthly Plans -->
+  <div class="plans-container active" id="monthly-plans" data-aos="fade-up">
+    <div class="plans-grid">
+      <!-- Basic Monthly -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">Basic</h3>
+          <div class="plan-price">
+            <span class="price">50</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/شهر</span>
+          </div>
+          <p class="plan-desc">الحزمة الأساسية للبدء في رحلة التعلم</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية</li>
+            <li><i class="fas fa-check-circle"></i> 5 اختبارات شهرية</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني عبر البريد الإلكتروني</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد بث مباشر</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد جلسات فردية</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="basic-monthly">إختر هذه الميزة</button>
+      </div>
+
+      <!-- Plus Monthly (Recommended) -->
+      <div class="plan-card recommended">
+        <div class="recommended-badge">الأفضل</div>
+        <div class="plan-header">
+          <h3 class="plan-name">Plus</h3>
+          <div class="plan-price">
+            <span class="price">80</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/شهر</span>
+          </div>
+          <p class="plan-desc">الحزمة المثالية للطلاب الجادين</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية والمتقدمة</li>
+            <li><i class="fas fa-check-circle"></i> 10 اختبارات شهرية</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني عبر البريد والواتساب</li>
+            <li><i class="fas fa-check-circle"></i> 2 جلسة بث مباشر شهرياً</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد جلسات فردية</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="plus-monthly">إختر هذه الميزة</button>
+      </div>
+
+      <!-- VIP Monthly -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">VIP</h3>
+          <div class="plan-price">
+            <span class="price">120</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/شهر</span>
+          </div>
+          <p class="plan-desc">تجربة تعليمية متكاملة بامتياز</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية والمتقدمة</li>
+            <li><i class="fas fa-check-circle"></i> اختبارات غير محدودة</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني على مدار الساعة</li>
+            <li><i class="fas fa-check-circle"></i> جلسات بث مباشر أسبوعية</li>
+            <li><i class="fas fa-check-circle"></i> جلسة فردية مع الأستاذ</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="vip-monthly">إختر هذه الميزة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yearly Plans -->
+  <div class="plans-container" id="yearly-plans" data-aos="fade-up">
+    <div class="plans-grid">
+      <!-- Basic Yearly -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">Basic</h3>
+          <div class="plan-price">
+            <span class="price">500</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/سنة</span>
+            <div class="discount-badge">توفير 20%</div>
+          </div>
+          <p class="plan-desc">الحزمة الأساسية للبدء في رحلة التعلم</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية</li>
+            <li><i class="fas fa-check-circle"></i> 60 اختبار سنوياً</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني عبر البريد الإلكتروني</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد بث مباشر</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد جلسات فردية</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="basic-yearly">إختر هذه الميزة</button>
+      </div>
+
+      <!-- Plus Yearly (Recommended) -->
+      <div class="plan-card recommended">
+        <div class="recommended-badge">الأفضل</div>
+        <div class="plan-header">
+          <h3 class="plan-name">Plus</h3>
+          <div class="plan-price">
+            <span class="price">800</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/سنة</span>
+            <div class="discount-badge">توفير 25%</div>
+          </div>
+          <p class="plan-desc">الحزمة المثالية للطلاب الجادين</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية والمتقدمة</li>
+            <li><i class="fas fa-check-circle"></i> 120 اختبار سنوياً</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني عبر البريد والواتساب</li>
+            <li><i class="fas fa-check-circle"></i> 24 جلسة بث مباشر سنوياً</li>
+            <li class="disabled"><i class="fas fa-times-circle"></i> لا يوجد جلسات فردية</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="plus-yearly">إختر هذه الميزة</button>
+      </div>
+
+      <!-- VIP Yearly -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">VIP</h3>
+          <div class="plan-price">
+            <span class="price">1200</span>
+            <span class="currency">د.ت</span>
+            <span class="period">/سنة</span>
+            <div class="discount-badge">توفير 30%</div>
+          </div>
+          <p class="plan-desc">تجربة تعليمية متكاملة بامتياز</p>
+        </div>
+        <div class="plan-features">
+          <ul>
+            <li><i class="fas fa-check-circle"></i> وصول إلى جميع الدروس الأساسية والمتقدمة</li>
+            <li><i class="fas fa-check-circle"></i> اختبارات غير محدودة</li>
+            <li><i class="fas fa-check-circle"></i> دعم فني على مدار الساعة</li>
+            <li><i class="fas fa-check-circle"></i> 48 جلسة بث مباشر سنوياً</li>
+            <li><i class="fas fa-check-circle"></i> 12 جلسة فردية مع الأستاذ</li>
+          </ul>
+        </div>
+        <button class="btn btn-plan-select" data-plan="vip-yearly">إختر هذه الميزة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Comparison -->
+  <div class="features-comparison glass-card" data-aos="fade-up">
+    <h2 class="section-title">مقارنة المميزات</h2>
+    <div class="comparison-table">
+      <table>
+        <thead>
+          <tr>
+            <th>الميزة</th>
+            <th>Basic</th>
+            <th>Plus</th>
+            <th>VIP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>الدروس الأساسية</td>
+            <td><i class="fas fa-check"></i></td>
+            <td><i class="fas fa-check"></i></td>
+            <td><i class="fas fa-check"></i></td>
+          </tr>
+          <tr>
+            <td>الدروس المتقدمة</td>
+            <td><i class="fas fa-times"></i></td>
+            <td><i class="fas fa-check"></i></td>
+            <td><i class="fas fa-check"></i></td>
+          </tr>
+          <tr>
+            <td>عدد الاختبارات</td>
+            <td>5 شهرياً</td>
+            <td>10 شهرياً</td>
+            <td>غير محدود</td>
+          </tr>
+          <tr>
+            <td>جلسات البث المباشر</td>
+            <td><i class="fas fa-times"></i></td>
+            <td>2 شهرياً</td>
+            <td>أسبوعية</td>
+          </tr>
+          <tr>
+            <td>الدعم الفني</td>
+            <td>بريد إلكتروني</td>
+            <td>بريد وواتساب</td>
+            <td>24/7 متاح دائماً</td>
+          </tr>
+          <tr>
+            <td>جلسات فردية</td>
+            <td><i class="fas fa-times"></i></td>
+            <td><i class="fas fa-times"></i></td>
+            <td>1 شهرياً</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="faq-section glass-card" data-aos="fade-up">
+    <h2 class="section-title">الأسئلة الشائعة</h2>
+    <div class="faq-container">
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>كيف يمكنني تغيير باقتي؟</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>يمكنك تغيير باقاتك في أي وقت من خلال صفحة الاشتراكات. سيتم احتساب الفرق بين الباقات وتطبيقه على اشتراكك الحالي.</p>
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>هل يمكنني الحصول على استرداد للأموال؟</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>نعم، لدينا سياسة استرداد لمدة 14 يومًا من تاريخ الاشتراك. بعد هذه الفترة، لا يمكن استرداد المبالغ المدفوعة.</p>
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>ما هي طرق الدفع المتاحة؟</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>نحن نقبل الدفع عبر D17، PayPal، وبطاقات الائتمان والخصم الدولية.</p>
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>هل يمكنني مشاركة اشتراكي مع آخرين؟</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>لا، الاشتراكات مخصصة للاستخدام الفردي فقط. أي محاولة لمشاركة الحساب قد تؤدي إلى إيقاف الخدمة.</p>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Payment Methods -->
+  <div class="payment-methods" data-aos="fade-up">
+    <h3>طرق الدفع الآمنة</h3>
+    <div class="methods-grid">
+      <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="PayPal">
+      <img src="image/logod17bnk.png" alt="D17">
+      <img src="https://cdn-icons-png.flaticon.com/512/179/179457.png" alt="Visa">
+      <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" alt="Mastercard">
+    </div>
+  </div>
+</div>
+
+
+<!-- Confirmation Modal -->
+<div class="modal" id="confirmation-modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('confirmation-modal')">&times;</span>
+        <h2 class="section-title">تأكيد عملية الشراء</h2>
+        <div class="modal-body">
+          <div class="plan-summary">
+            <h3 id="confirm-plan-name">باقة بلس شهرية</h3>
+            <p class="price" id="confirm-plan-price">80 د.ت</p>
+            <p>هل أنت متأكد من شراء هذه الباقة؟</p>
+          </div>
+          <div class="payment-actions">
+            <button class="btn btn-confirm-payment" id="final-confirm-btn">
+              <i class="fas fa-check-circle"></i> تأكيد الدفع
+            </button>
+            <button class="btn btn-cancel" onclick="closeModal('confirmation-modal')">
+              إلغاء
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+      <div class="modal-content">
+        <div class="success-content">
+          <div class="success-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <h2>تمت العملية بنجاح!</h2>
+          <p>تم تفعيل اشتراك <span id="success-plan-name">باقة بلس</span> بنجاح.</p>
+          <button class="btn btn-success" onclick="closeModal('success-modal')">
+            حسناً
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal" id="error-modal">
+      <div class="modal-content">
+        <div class="success-content">
+          <div class="success-icon" style="background: rgba(235,87,87,0.1); color: #EB5757;">
+            <i class="fas fa-times"></i>
+          </div>
+          <h2>خطأ في الدفع</h2>
+          <p id="error-message">رصيدك غير كافي. يرجى شحن المحفظة أولاً.</p>
+          <button class="btn btn-success" style="background: #EB5757;" 
+                  onclick="closeModal('error-modal')">
+            حسناً
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Loader -->
+    <div id="payment-loader">
+      <div class="loader-spinner"></div>
+      <p>جاري معالجة الدفع...</p>
+    </div>
+
+<style>
+/* Premium Page Styles */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.premium-hero {
+  background: linear-gradient(135deg, #6C4AB6, #8D72E1);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 15s linear infinite;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hero-content {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+.hero-badge {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  font-weight: 500;
+}
+
+.hero-image {
+  flex: 0 0 300px;
+  text-align: center;
+}
+
+.hero-image img {
+  width: 100%;
+  max-width: 250px;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+
+.current-plan-container {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(108, 74, 182, 0.1), rgba(141, 114, 225, 0.1));
+  border-left: 4px solid var(--primary);
+}
+
+.plan-status {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.status-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(108, 74, 182, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+.status-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: var(--dark);
+}
+body.dark-mode .status-info h3 {
+  color: white;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6C4AB6, #8D72E1);
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #666;
+  display: block;
+}
+
+.status-desc {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.btn-upgrade {
+  background: linear-gradient(45deg, #6C4AB6, #8D72E1);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-upgrade:hover {
+  background: linear-gradient(45deg, #8D72E1, #6C4AB6);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 74, 182, 0.3);
+}
+
+/* Performance Optimizations */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Remove animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(108, 74, 182, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(108, 74, 182, 0.5);
+}
+
+.status-info p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.btn-upgrade {
+  background: linear-gradient(45deg, #FF9B9B, #FFCC00);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-upgrade:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(255, 155, 155, 0.3);
+}
+
+.subscription-tabs {
+  display: flex;
+  position: relative;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.tab-btn {
+  padding: 0.8rem 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  background: var(--primary);
+  transition: all 0.3s ease;
+  width: 33.33%;
+}
+
+.plans-container {
+  display: none;
+  margin-bottom: 3rem;
+}
+
+.plans-container.active {
+  display: block;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+body.dark-mode .plan-card {
+  background: rgba(30, 30, 45, 0.6);
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.plan-card.recommended {
+  border: 2px solid var(--primary);
+  transform: scale(1.02);
+}
+
+.recommended-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 0.3rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(108, 74, 182, 0.3);
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px dashed rgba(0,0,0,0.1);
+}
+
+.plan-name {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.plan-price {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+body.dark-mode .price {
+  color: white;
+}
+
+.currency {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.period {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.discount-badge {
+  background: rgba(75, 181, 67, 0.1);
+  color: var(--success);
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.plan-desc {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.plan-features {
+  margin-bottom: 1.5rem;
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-features li {
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.plan-features li.disabled {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.plan-features i.fa-check-circle {
+  color: var(--success);
+}
+
+.plan-features i.fa-times-circle {
+  color: var(--error);
+}
+
+.btn-plan-select {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-plan-select:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.plan-card.recommended .btn-plan-select {
+  background: linear-gradient(45deg, #FF9B9B, #FFCC00);
+}
+
+.features-comparison {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-table {
+  overflow-x: auto;
+}
+
+.comparison-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comparison-table th, .comparison-table td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.comparison-table th {
+  background: rgba(108, 74, 182, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.comparison-table tr:nth-child(even) {
+  background: rgba(0,0,0,0.02);
+}
+
+body.dark-mode .comparison-table tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
+
+.comparison-table i.fa-check {
+  color: var(--success);
+}
+
+.comparison-table i.fa-times {
+  color: var(--error);
+}
+
+.faq-section {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.faq-container {
+  margin-top: 1.5rem;
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.faq-question {
+  padding: 1rem;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .faq-question {
+  background: rgba(30, 30, 45, 0.6);
+}
+
+.faq-question:hover {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+.faq-question h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.faq-question i {
+  transition: transform 0.3s ease;
+}
+
+.faq-answer {
+  padding: 0 1rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: rgba(108, 74, 182, 0.05);
+}
+
+body.dark-mode .faq-answer {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+.faq-item.active .faq-question {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+.faq-item.active .faq-question i {
+  transform: rotate(180deg);
+}
+
+.faq-item.active .faq-answer {
+  max-height: 200px;
+  padding: 1rem;
+}
+
+.payment-methods {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.payment-methods h3 {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.methods-grid {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.methods-grid img {
+  height: 30px;
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.methods-grid img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  padding: 2.5rem;
+  position: relative;
+  animation: modalFadeIn 0.3s ease;
+}
+
+body.dark-mode .modal-content {
+  background: var(--dark);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.close-modal {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-body {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.plan-summary {
+  flex: 1;
+  background: rgba(108, 74, 182, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+body.dark-mode .plan-summary {
+  background: rgba(108, 74, 182, 0.1);
+}
+
+.payment-form {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'Tajawal';
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.input-with-icon input {
+  padding-left: 3rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.btn-confirm-payment {
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm-payment:hover {
+  background: var(--primary-light);
+}
+
+.secure-payment {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.success-content {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(75, 181, 67, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.5rem;
+  color: var(--success);
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  cursor: pointer;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .premium-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .hero-image {
+    margin-top: 1.5rem;
+  }
+  
+  .modal-body {
+    flex-direction: column;
+  }
+  
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .tab-btn {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .current-plan-container {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .plan-status {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.modal {
+  display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 999;
+  justify-content: center; align-items: center;
+}
+.modal-content {
+  padding: 20px; border-radius: 15px;
+  text-align: center; width: 500px;
+}
+.close-btn {
+  float: right; font-size: 22px; cursor: pointer;
+}
+.btn-confirm {
+  margin-top: 15px; padding: 10px 20px;
+  background: #28a745; color: white; border: none; border-radius: 10px;
+  cursor: pointer;
+}
+
+#payment-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .loader-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6C4AB6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+</style>
+
+<script>
+// ====================== CONFIG ======================
+const API_BASE = "http://localhost:5000"; // <-- change if needed
+
+// ================== GLOBAL STATE ====================
+let userWalletBalance = null;      // null until loaded
+let currentSelectedPlan = null;
+let planButtons = [];
+let currentTab = "monthly";
+
+// ================== BOOTSTRAP =======================
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOM fully loaded");
+
+  initializeTabs();
+  initializeFAQ();
+  initializeUpgradeButton();
+  initializePlanSelection();
+
+  if (isUserAuthenticated()) {
+    await fetchUserBalance(); // enables buttons on success/fail
+  } else {
+    console.warn("User not authenticated; defaulting balance to 0");
+    userWalletBalance = 0;
+    updateBalanceDisplay();
+    enablePlanButtons();
+  }
+});
+
+// ================== AUTH HELPERS ====================
+function isUserAuthenticated() {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.exp && Date.now() >= payload.exp * 1000) return false;
+    return true;
+  } catch (e) {
+    console.error("Auth check failed:", e);
+    return false;
+  }
+}
+
+function getUserId() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return Number(payload.userId);
+  } catch (e) {
+    console.error("Token decode failed:", e);
+    return null;
+  }
+}
+
+// ============== WALLET / BALANCE ====================
+async function fetchUserBalance() {
+  console.log("Fetching user balance...");
+  const userId = getUserId();
+  const token = localStorage.getItem("token");
+  if (!userId || !token) {
+    console.warn("Missing authentication data");
+    userWalletBalance = 0;
+    updateBalanceDisplay();
+    enablePlanButtons();
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/wallet/balance/${userId}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const text = await res.text();
+    if (!text) throw new Error("Empty response from server");
+    let data;
+    try { data = JSON.parse(text); } catch { throw new Error("Invalid JSON response"); }
+
+    if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+    if (typeof data.balance !== "number") throw new Error("Invalid balance format");
+
+    userWalletBalance = data.balance;
+  } catch (err) {
+    console.error("Error fetching balance:", err);
+    // Fall back to 0 but still enable UI so user gets proper error on Buy
+    userWalletBalance = 0;
+  } finally {
+    updateBalanceDisplay();
+    enablePlanButtons();
+  }
+}
+
+function updateBalanceDisplay() {
+  console.log("Updating balance display to:", userWalletBalance);
+  document.querySelectorAll(".balance-display, .wallet-balance").forEach(el => {
+    el.textContent = `رصيدك الحالي: ${userWalletBalance ?? 0} د.ت`;
+  });
+}
+
+function enablePlanButtons() {
+  planButtons.forEach(btn => btn.disabled = false);
+}
+
+// ================== TABS (Monthly/Yearly) ===========
+function initializeTabs() {
+  const tabBtns = document.querySelectorAll(".subscription-tabs .tab-btn");
+  const tabIndicator = document.querySelector(".subscription-tabs .tab-indicator");
+  const monthly = document.getElementById("monthly-plans");
+  const yearly  = document.getElementById("yearly-plans");
+
+  function setActive(tab) {
+    currentTab = tab;
+    tabBtns.forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    monthly?.classList.toggle("active", tab === "monthly");
+    yearly?.classList.toggle("active", tab === "yearly");
+
+    // Move the indicator (2 tabs => 50% width)
+    if (tabIndicator) {
+      const idx = tab === "monthly" ? 0 : 1;
+      tabIndicator.style.width = `${100 / tabBtns.length}%`;
+      tabIndicator.style.left = `${idx * (100 / tabBtns.length)}%`;
+    }
+  }
+
+  tabBtns.forEach(btn => btn.addEventListener("click", () => setActive(btn.dataset.tab)));
+  setActive("monthly"); // default
+}
+
+// ================== FAQ TOGGLER =====================
+function initializeFAQ() {
+  document.querySelectorAll(".faq-item .faq-question").forEach(q => {
+    q.addEventListener("click", () => q.parentElement.classList.toggle("active"));
+  });
+}
+
+// ================== UPGRADE BUTTON ==================
+function initializeUpgradeButton() {
+  const upgradeBtn = document.getElementById("upgrade-btn");
+  if (!upgradeBtn) return;
+  upgradeBtn.addEventListener("click", () => {
+    const monthlyBtn = document.querySelector('.subscription-tabs .tab-btn[data-tab="monthly"]');
+    monthlyBtn?.click();
+    document.getElementById("monthly-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+// ================== PLAN SELECTION ==================
+function initializePlanSelection() {
+  const plans = {
+    "basic-monthly": { planId: "basic-monthly", name: "باقة بيسك شهرية", price: 50,  durationMonths: 1 },
+    "plus-monthly":  { planId: "plus-monthly",  name: "باقة بلس شهرية",  price: 80,  durationMonths: 1 },
+    "vip-monthly":   { planId: "vip-monthly",   name: "باقة VIP شهرية",  price: 120, durationMonths: 1 },
+    "basic-yearly":  { planId: "basic-yearly",  name: "باقة بيسك سنوية", price: 500, durationMonths: 12 },
+    "plus-yearly":   { planId: "plus-yearly",   name: "باقة بلس سنوية",  price: 800, durationMonths: 12 },
+    "vip-yearly":    { planId: "vip-yearly",    name: "باقة VIP سنوية",  price: 1200,durationMonths: 12 }
+  };
+
+  // collect + disable until wallet fetched
+  planButtons = Array.from(document.querySelectorAll(".btn-plan-select"));
+  planButtons.forEach(btn => btn.disabled = true);
+
+  planButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const planId = btn.dataset.plan;
+      console.log("Plan button clicked:", planId);
+
+      if (!plans[planId]) {
+        showPaymentError("خطأ: الباقة غير موجودة");
+        return;
+      }
+
+      if (userWalletBalance === null) {
+        showPaymentError("جارٍ تحميل رصيدك، يرجى الانتظار...");
+        return;
+      }
+
+      currentSelectedPlan = plans[planId];
+
+      if (userWalletBalance >= currentSelectedPlan.price) {
+        showConfirmationModal();
+      } else {
+        showPaymentError("رصيدك غير كافي. يرجى شحن المحفظة أولاً.");
+      }
+    });
+  });
+
+  const confirmBtn = document.getElementById("final-confirm-btn");
+  if (confirmBtn) confirmBtn.addEventListener("click", processPayment);
+}
+
+// ================== PAYMENT FLOW ====================
+async function processPayment() {
+  if (!currentSelectedPlan) return showPaymentError("خطأ: لم يتم اختيار باقة");
+
+  const userId = getUserId();
+  if (!userId) return showPaymentError("خطأ في مصادقة المستخدم");
+
+  // compute dates on frontend (your backend validates and stores)
+  const now = new Date();
+  const startDate = now.toISOString();
+  const expiry = new Date();
+  expiry.setMonth(expiry.getMonth() + (currentSelectedPlan.durationMonths || 1));
+  const expiryDate = expiry.toISOString();
+
+  showLoading(true);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/subscribe`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        planId: currentSelectedPlan.planId,
+        planName: currentSelectedPlan.name,
+        price: currentSelectedPlan.price,
+        userId,
+        startDate,
+        expiryDate,
+        status: "active"
+      })
+    });
+
+    const text = await res.text();
+    let result = {};
+    if (text) {
+      try { result = JSON.parse(text); } catch { throw new Error("رد غير صالح من الخادم"); }
+    }
+
+    if (!res.ok || !result.success) {
+      throw new Error(result.message || `فشلت عملية الاشتراك (HTTP ${res.status})`);
+    }
+
+    // Refresh wallet from backend instead of subtracting locally
+    await fetchUserBalance();
+    updateUserSubscription();
+    showPaymentSuccess();
+  } catch (err) {
+    console.error("Subscription error:", err);
+    showPaymentError(err.message || "حدث خطأ أثناء الاشتراك");
+  } finally {
+    showLoading(false);
+    closeModal("confirmation-modal");
+  }
+}
+
+// ================== MODALS / UI HELPERS =============
+function showConfirmationModal() {
+  const modal = document.getElementById("confirmation-modal");
+  if (!modal) return;
+
+  const planNameEl = modal.querySelector("#confirm-plan-name");
+  const planPriceEl = modal.querySelector("#confirm-plan-price");
+
+  if (planNameEl) planNameEl.textContent = currentSelectedPlan.name;
+  if (planPriceEl) planPriceEl.textContent = `${currentSelectedPlan.price} د.ت`;
+
+  modal.style.display = "flex";
+}
+
+function updateUserSubscription() {
+  const container = document.querySelector(".current-plan-container");
+  if (!container || !currentSelectedPlan) return;
+
+  const statusInfo = container.querySelector(".status-info h3");
+  const progressText = container.querySelector(".progress-text");
+  const progressFill = container.querySelector(".progress-fill");
+  const statusDesc  = container.querySelector(".status-desc");
+
+  if (statusInfo)  statusInfo.textContent = currentSelectedPlan.name;
+  if (progressText) progressText.textContent = "اشتراك نشط";
+  if (progressFill) {
+    progressFill.style.width = "100%";
+    progressFill.style.backgroundColor = "#4BB543";
+  }
+  if (statusDesc)  statusDesc.textContent = "يمكنك الآن الوصول إلى جميع الميزات المميزة";
+}
+
+function showPaymentSuccess() {
+  const modal = document.getElementById("success-modal");
+  if (!modal) return;
+  const nameEl = modal.querySelector("#success-plan-name");
+  if (nameEl && currentSelectedPlan) nameEl.textContent = currentSelectedPlan.name;
+  modal.style.display = "flex";
+}
+
+function showPaymentError(message) {
+  const modal = document.getElementById("error-modal");
+  if (!modal) return;
+  const msgEl = modal.querySelector("#error-message");
+  if (msgEl) msgEl.textContent = message;
+  modal.style.display = "flex";
+}
+
+function showLoading(show) {
+  const loader = document.getElementById("payment-loader");
+  if (loader) loader.style.display = show ? "flex" : "none";
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = "none";
+}
+
+// close any modal by clicking outside
+window.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal")) {
+    e.target.style.display = "none";
+  }
+});
+
+console.log("Subscription system initialized.");
+</script>
+
+    <!-- Settings Page -->
+    <div class="page-content" id="settings-page">
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;" data-aos="fade-up">
+        <h3 style="margin-bottom: 1.5rem;">الملف الشخصي</h3>
+        
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #666;">الاسم الكامل</label>
+            <input type="text" id="settings-name" value="" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #666;">البريد الإلكتروني</label>
+            <input type="email" id="settings-email" value="" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #666;">رقم الهاتف</label>
+            <input type="tel" id="settings-phone" value="" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #666;">الشعبة</label>
+            <select id="settings-section" value="" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+              <option value="رياضيات">الرياضيات</option>
+              <option value="اقتصاد وتصرف">الإقتصاد و التصرف</option>
+              <option value="آداب">الآداب</option>
+              <option value="علوم تجريبية">العلوم التجريبية</option>
+              <option value="علوم إعلامية">علوم الإعلامية</option>
+              <option value="علوم تقنية">العلوم التقنية</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="text-align: left;">
+          <button id="save-profile-btn" class="btn btn-primary" style="width: auto;">
+            <i class="fas fa-save"></i>
+            حفظ التغييرات
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;" data-aos="fade-up">
+        <h3 style="margin-bottom: 1.5rem;">تغيير كلمة المرور</h3>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #666;">كلمة المرور الحالية</label>
+          <input type="password" id="current-password"  style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #666;">كلمة المرور الجديدة</label>
+          <input type="password" id="new-password"  style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #666;">تأكيد كلمة المرور الجديدة</label>
+          <input type="password" id="confirm-password" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Tajawal';">
+        </div>
+        
+        <div style="text-align: left;">
+          <button class="btn btn-primary" id="change-password-btn" style="width: auto;">
+            <i class="fas fa-key"></i>
+            تغيير كلمة المرور
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding: 1.5rem;" data-aos="fade-up">
+        <h3 style="margin-bottom: 1.5rem;">الإعدادات</h3>
+      
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.8rem 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
+          <span>إشعارات البريد الإلكتروني</span>
+          <label class="switch">
+            <input type="checkbox" id="email-notifications">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.8rem 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
+          <span>إشعارات التطبيق</span>
+          <label class="switch">
+            <input type="checkbox" id="app-notifications">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      
+
+        <div class="glass-card" style="padding: 1.5rem; margin-top: 2rem;" data-aos="fade-up">
+  <div style="text-align: center;">
+    <button class="btn btn-danger" id="logout-btn" style="background: #e74c3c; color: white; padding: 0.8rem 1.5rem; border-radius: 8px; border: none; font-size: 1rem;">
+      <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+    </button>
+  </div>
+</div>
+      </div>
+      
+      
+    
+    
+
+
+
+  <!-- JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <script>
+    // Performance optimizations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS with reduced settings
+      AOS.init({
+        duration: 300,
+        easing: 'ease-out-quad',
+        once: true,
+        offset: 120
+      });
+      // Defer chart initialization
+      setTimeout(initCharts, 500);
+      
+      // Optimized particle animation
+      createParticles();
+    });
+
+const currentUserId = 1;
+
+    // Create floating particles
+    const particlesContainer = document.querySelector('.particles');
+    const particleCount = 3;
+
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      
+      // Random size between 5px and 15px
+      const size = Math.random() * 10 + 5;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      
+      // Random position
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.top = `${Math.random() * 100}%`;
+      
+      // Random animation duration between 10s and 20s
+      particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+      
+      // Random delay
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+      
+      // Random opacity
+      particle.style.opacity = Math.random() * 0.5 + 0.1;
+      
+      particlesContainer.appendChild(particle);
+    }
+
+    // Toggle dark mode
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      
+      if (document.body.classList.contains('dark-mode')) {
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      } else {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+      }
+    });
+
+    // Toggle sidebar on mobile
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+    });
+
+    // Toggle notifications panel
+    const notificationBtn = document.getElementById('notification-btn');
+    const closeNotifications = document.getElementById('close-notifications');
+    const notificationPanel = document.getElementById('notification-panel');
+    
+    notificationBtn.addEventListener('click', () => {
+      notificationPanel.classList.add('active');
+    });
+    
+    closeNotifications.addEventListener('click', () => {
+      notificationPanel.classList.remove('active');
+    });
+
+    // Optimized countdown timer
+    let countdownInterval;
+    function initCountdown() {
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    function updateCountdown() {
+      const countDownDate = new Date("Jun 10, 2026 08:00:00").getTime();
+      const now = new Date().getTime();
+      const distance = countDownDate - now;
+      
+      document.getElementById("days").textContent = Math.floor(distance / (1000 * 60 * 60 * 24));
+      document.getElementById("hours").textContent = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      document.getElementById("minutes").textContent = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      document.getElementById("seconds").textContent = Math.floor((distance % (1000 * 60)) / 1000);
+    }
+    
+    // Update the count down every 1 second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    function initCharts() {
+      // Initialize only visible charts
+      if(document.getElementById('progress-chart')) {
+        new Chart(document.getElementById('progress-chart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+            datasets: [{
+              data: [12, 14, 15, 16, 17, 18],
+              backgroundColor: 'rgba(108, 74, 182, 0.2)',
+              borderColor: 'rgba(108, 74, 182, 1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: false, min: 10, max: 20 }
+            }
+          }
+        });
+      }
+    }
+
+    // Detailed progress chart
+    const detailedCtx = document.getElementById('detailed-progress-chart').getContext('2d');
+    const detailedProgressChart = new Chart(detailedCtx, {
+      type: 'line',
+      data: {
+        labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+        datasets: [
+          {
+            label: 'الرياضيات',
+            data: [15, 16, 17, 18],
+            borderColor: 'rgba(108, 74, 182, 1)',
+            backgroundColor: 'rgba(108, 74, 182, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'الفيزياء',
+            data: [14, 15, 16, 17],
+            borderColor: 'rgba(75, 181, 67, 1)',
+            backgroundColor: 'rgba(75, 181, 67, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'اللغة العربية',
+            data: [16, 17, 17, 18],
+            borderColor: 'rgba(255, 155, 155, 1)',
+            backgroundColor: 'rgba(255, 155, 155, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            rtl: true
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: 10,
+            max: 20,
+            ticks: {
+              stepSize: 2
+            }
+          }
+        }
+      }
+    });
+
+    // Grades distribution chart
+    const gradesCtx = document.getElementById('grades-distribution-chart').getContext('2d');
+    const gradesChart = new Chart(gradesCtx, {
+      type: 'bar',
+      data: {
+        labels: ['الرياضيات', 'الفيزياء', 'اللغة العربية', 'التاريخ', 'الفلسفة', 'اللغة الفرنسية'],
+        datasets: [{
+          label: 'الدرجات',
+          data: [18.5, 17.75, 18.25, 18, 17, 16.5],
+          backgroundColor: [
+            'rgba(108, 74, 182, 0.7)',
+            'rgba(75, 181, 67, 0.7)',
+            'rgba(255, 155, 155, 0.7)',
+            'rgba(255, 204, 0, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(153, 102, 255, 0.7)'
+          ],
+          borderColor: [
+            'rgba(108, 74, 182, 1)',
+            'rgba(75, 181, 67, 1)',
+            'rgba(255, 155, 155, 1)',
+            'rgba(255, 204, 0, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: 10,
+            max: 20,
+            ticks: {
+              stepSize: 2
+            }
+          }
+        }
+      }
+    });
+
+    // Performance comparison chart
+    const performanceCtx = document.getElementById('performance-comparison-chart').getContext('2d');
+    const performanceChart = new Chart(performanceCtx, {
+      type: 'radar',
+      data: {
+        labels: ['الرياضيات', 'الفيزياء', 'اللغة العربية', 'التاريخ', 'الفلسفة', 'اللغة الفرنسية'],
+        datasets: [
+          {
+            label: 'أدائك',
+            data: [18.5, 17.75, 18.25, 18, 17, 16.5],
+            backgroundColor: 'rgba(108, 74, 182, 0.2)',
+            borderColor: 'rgba(108, 74, 182, 1)',
+            borderWidth: 2
+          },
+          {
+            label: 'متوسط الشعبة',
+            data: [16, 15.5, 17, 16.5, 15, 15],
+            backgroundColor: 'rgba(75, 181, 67, 0.2)',
+            borderColor: 'rgba(75, 181, 67, 1)',
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            rtl: true
+          }
+        },
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 10,
+            suggestedMax: 20
+          }
+        }
+      }
+    });
+
+    // Calendar navigation
+    const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+      "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+    ];
+    
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    
+    document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    
+    document.getElementById('prev-month').addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    });
+    
+    document.getElementById('next-month').addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+  // Page navigation
+  const menuItems = document.querySelectorAll('.menu-item');
+  const pageContents = document.querySelectorAll('.page-content');
+  
+  if (menuItems.length > 0) {
+    menuItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Remove active class from all menu items
+        menuItems.forEach(i => i.classList.remove('active'));
+        
+        // Add active class to clicked menu item
+        item.classList.add('active');
+        
+        // Hide all page contents
+        pageContents.forEach(content => content.classList.remove('active'));
+        
+        // Show the selected page content
+        const target = item.getAttribute('data-target');
+        const targetPage = document.getElementById(`${target}-page`);
+        if (targetPage) {
+          targetPage.classList.add('active');
+        }
+        
+        // Update page title and description
+        updatePageTitle(target);
+        
+        // Close sidebar on mobile
+        if (window.innerWidth < 1200) {
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar) {
+            sidebar.classList.remove('active');
+          }
+        }
+      });
+    });
+  }
+});
+    
+    function updatePageTitle(pageName) {
+  const title = document.getElementById("page-title");
+  const description = document.getElementById("page-description");
+  const container = document.getElementById("page-info-container");
+
+  if (pageName === "dashboard") {
+    container.style.display = "block";
+    title.textContent = "مرحباً بعودتك 👋";
+    description.textContent = "يسرنا رؤيتك مجدداً على منصتك التعليمية Digital Bac";
+  } else {
+    container.style.display = "none";
+    title.textContent = "";
+    description.textContent = "";
+  }
+}
+    
+  </script>
+<script>
+  // DOM Content Loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Auth modal toggle
+  document.getElementById('auth-btn').addEventListener('click', () => {
+    document.getElementById('auth-modal').style.display = 'flex';
+  });
+  
+  // Login handler
+  document.getElementById('login-btn').addEventListener('click', () => {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    
+    if (login(email, password)) {
+      loadUserContent();
+      document.getElementById('auth-modal').style.display = 'none';
+    } else {
+      alert('بيانات الدخول غير صحيحة');
+    }
+  });
+  
+  // Video click handler
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('video-thumbnail')) {
+      const videoId = parseInt(e.target.dataset.videoId);
+      
+      if (canAccessVideo(videoId)) {
+        showVideoPlayer(videoId);
+      } else {
+        document.getElementById('subscription-modal').style.display = 'flex';
+      }
+    }
+  });
+
+  // Subscription handler
+  document.querySelectorAll('.subscription-card button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const type = this.closest('.subscription-card').dataset.type;
+      if (processPayment(type)) {
+        alert(`تم الاشتراك بنجاح في باقة ${type}`);
+        document.getElementById('subscription-modal').style.display = 'none';
+        loadUserContent();
+      } else {
+        alert('حدث خطأ أثناء المعالجة');
+      }
+    });
+  });
+  
+  // Close modals
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.modal').style.display = 'none';
+    });
+  });
+});
+
+function loadUserContent() {
+  if (!currentUser) return;
+  
+  // Update UI
+  document.getElementById('username').textContent = currentUser.name;
+  document.getElementById('user-section').textContent = currentUser.section;
+  
+  // Load courses
+  const courses = getCoursesForUser();
+  const coursesGrid = document.querySelector('.courses-grid');
+  coursesGrid.innerHTML = '';
+  
+  courses.forEach(course => {
+    const courseHTML = `
+      <div class="course-card">
+        <div class="course-image">
+          <img src="${course.thumbnail}" alt="${course.title}">
+        </div>
+        <div class="course-content">
+          <h3>${course.title}</h3>
+          <p>${course.teacher}</p>
+          
+          <div class="course-videos">
+            <h4>الفيديوهات</h4>
+            ${course.videos.map(video => `
+              <div class="video-item">
+                <div class="video-thumbnail ${video.free || checkSubscription() ? '' : 'video-locked'}" 
+                     data-video-id="${video.id}">
+                  <i class="fas fa-play"></i>
+                  <span>${video.title} (${video.duration})</span>
+                  ${video.free || checkSubscription() ? '' : '<i class="fas fa-lock"></i>'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    coursesGrid.insertAdjacentHTML('beforeend', courseHTML);
+  });
+  
+  // Load assignments
+  const assignments = getAssignmentsForUser();
+  const assignmentsContainer = document.querySelector('.assignments-container');
+  assignmentsContainer.innerHTML = '';
+  
+  assignments.forEach(assignment => {
+    assignmentsContainer.insertAdjacentHTML('beforeend', `
+      <div class="assignment-card">
+        <h4>${assignment.title}</h4>
+        <p>المادة: ${assignment.courseTitle}</p>
+        <p>موعد التسليم: ${assignment.due}</p>
+      </div>
+    `);
+  });
+}
+</script>
+<script>
+  async function loadWallet(userId) {
+  // Get balance
+  const res = await apiFetch(`http://localhost:5000/api/wallet/balance/${userId}`);
+  const data = await res.json();
+  document.getElementById('wallet-balance-display').textContent = data.balance;
+
+  // Get history
+  const response = await apiFetch(`http://localhost:5000/api/wallet/history`);
+  const paymentsHistory = await hist.json();
+
+  const tbody = document.getElementById('payment-History');
+  tbody.innerHTML = '';
+  payments.forEach(p => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${new Date(p.createdAt).toLocaleDateString('ar-EG')}
+        <small style="display: block; color: #999;">${new Date(p.createdAt).toLocaleTimeString('ar-EG')}</small>
+      </td>
+      <td style="color: #4BB543;">+${p.amount} نقطة</td>
+      <td>${p.method}</td>
+      <td><span style="background: #e6f7ee; color: #4BB543; padding: 4px 8px; border-radius: 50px; font-size: 0.8rem;">${p.status}</span></td>
+      <td style="font-family: monospace; color: #666;">${p.referenceCode || '—'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function handleRecharge(e) {
+  e.preventDefault();
+
+  const button = document.getElementById('rechargeButton'); // 🔄 Replace with your actual button ID
+  button.disabled = true; // ✅ prevent double clicks
+
+  try {
+    const amount = parseFloat(document.getElementById('rechargeAmount').value);
+    const method = document.getElementById('paymentMethod').value;
+    const userId = currentUserId;
+
+    const response = await apiFetch('http://localhost:5000/api/add-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        amount: Number(document.getElementById("configAmount").value),
+        method: selectedPaymentMethod
+      })
+    });
+
+    const result = await response.json();
+    alert(result.message);
+
+    loadWallet(userId);
+  } catch (err) {
+    alert("❌ فشل الاتصال بالخادم.");
+    console.error(err);
+  } finally {
+    button.disabled = false; // 🔓 Re-enable after request
+  }
+}
+
+document.querySelectorAll('.menu-item').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // Hide all sections
+    document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+
+    // Show the selected section
+    const targetId = link.getAttribute('data-target');
+const targetSection = document.getElementById(targetId);
+if (targetSection) {
+  targetSection.style.display = 'block';
+}
+  });
+});
+
+</script>
+  <script>
+  let selectedPaymentMethod = null;
+
+function showPaymentForm(method) {
+  selectedPaymentMethod = method;
+  const form = document.getElementById('payment-config-form');
+  const title = document.getElementById('payment-form-title');
+
+  title.textContent = `إعدادات الشحن عبر ${method.toUpperCase()}`;
+  form.style.display = 'block';
+}
+
+async function submitPaymentConfig(event) {
+  event.preventDefault();
+
+  const amount = Number(document.getElementById('configAmount').value);
+  const reference = document.getElementById('configReference').value;
+
+  if (!selectedPaymentMethod) {
+    showToast("❌ الرجاء اختيار طريقة الدفع", "error");
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    showToast("❌ المستخدم غير موجود", "error");
+    return;
+  }
+
+  try {
+    const res = await apiFetch("http://localhost:5000/api/add-payment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        amount,
+        method: selectedPaymentMethod,
+        reference
+      })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "فشل إرسال عملية الدفع");
+    }
+
+    showToast(result.message || "✅ تم الشحن بنجاح", 'success');
+
+    // Reload wallet info
+    loadWallet(user.id);
+
+    // Reset UI
+    event.target.reset();
+    document.getElementById('payment-config-form').style.display = 'none';
+    selectedPaymentMethod = null;
+
+  } catch (err) {
+    console.error("❌ Error:", err);
+    showToast("حدث خطأ أثناء معالجة الدفع", 'error');
+  }
+}
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1) Ensure user is logged in
+    const token = await getValidToken();
+    if (!token) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    // 2) Load cached data instantly
+    const cached = JSON.parse(localStorage.getItem('user'));
+    if (cached) fillSettingsForm(cached);
+
+    // 3) Load fresh user data
+    await loadSettingsUserData();
+
+    // 4) Initialize dashboard sections
+    initDashboard();
+});
+
+
+
+  // ---- Dashboard Init ----
+  function initDashboard() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) return;
+
+  // Update welcome message
+  const title = document.getElementById("page-title");
+  const description = document.getElementById("page-description");
+  const container = document.getElementById("page-info-container");
+  
+  if (container && title && description) {
+    container.style.display = "block";
+    title.textContent = `مرحباً بعودتك 👋 ${user.name || ''}`;
+    description.textContent = `يسرنا رؤيتك مجدداً على منصتك التعليمية Digital Bac`;
+  }
+}
+  
+
+  // ---- Fill UI with user data ----
+  function fillSettingsForm(user) {
+    if (!user) return;
+    const username = document.getElementById('username');
+    const userSection = document.getElementById('user-section');
+    if (username) username.textContent = user.name || '';
+    if (userSection) userSection.textContent = user.section || '';
+
+    document.getElementById("settings-name").value    = user.name    || "";
+    document.getElementById("settings-email").value   = user.email   || "";
+    document.getElementById("settings-phone").value   = user.phone   || "";
+    document.getElementById("settings-section").value = user.section || "";
+
+    const emailNotif = document.getElementById('email-notifications');
+    const appNotif   = document.getElementById('app-notifications');
+    if (emailNotif) emailNotif.checked = user.emailNotifications ?? true;
+    if (appNotif)   appNotif.checked   = user.appNotifications   ?? true;
+  }
+
+  // ---- Load fresh data ----
+  async function loadSettingsUserData() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch user data");
+
+      const user = await response.json();
+      localStorage.setItem('user', JSON.stringify(user));
+      fillSettingsForm(user);
+    } catch (err) {
+      console.error("Error loading settings data:", err);
+    }
+  }
+
+  // ---- Token Handling ----
+  async function getValidToken() {
+    let token = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (!token) return null;
+    if (isTokenExpired(token)) {
+      if (!refreshToken) return null;
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/refresh-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.token) return null;
+
+        localStorage.setItem('token', data.token);
+        token = data.token;
+      } catch (err) {
+        console.error('Failed to refresh token:', err);
+        return null;
+      }
+    }
+    return token;
+  }
+
+  function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (payload.exp * 1000) < Date.now();
+    } catch (e) {
+      return true;
+    }
+  }
+
+  // ---- Save profile ----
+  document.getElementById('save-profile-btn').addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast('يجب تسجيل الدخول أولاً', 'error');
+      return;
+    }
+
+    const payload = {
+      name:   document.getElementById('settings-name').value,
+      email:  document.getElementById('settings-email').value,
+      phone:  document.getElementById('settings-phone').value,
+      section:document.getElementById('settings-section').value,
+      emailNotifications: document.getElementById('email-notifications').checked,
+      appNotifications:   document.getElementById('app-notifications').checked,
+    };
+
+    try {
+      const res = await apiFetch('http://localhost:5000/api/auth/update-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'فشل الحفظ');
+
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        fillSettingsForm(data.user);
+      }
+
+      showToast('✅ تم حفظ التغييرات بنجاح', 'success');
+    } catch (err) {
+      showToast('❌ خطأ: ' + err.message, 'error');
+    }
+  });
+
+  // ---- Logout ----
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (!confirm('هل تريد تسجيل الخروج من الحساب؟')) return;
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('http://localhost:5000/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      }
+      localStorage.clear();
+      showToast('✅ تم تسجيل الخروج بنجاح', 'success');
+      window.location.href = 'login.html';
+    } catch (err) {
+      console.error('Logout error:', err);
+      showToast('❌ حدث خطأ أثناء تسجيل الخروج', 'error');
+    }
+  });
+
+  // ---- Save Preferences ----
+  document.getElementById('savePreferences').addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('يجب تسجيل الدخول أولاً');
+
+    const emailNotifications = document.getElementById('emailNotify').checked;
+    const appNotifications = document.getElementById('appNotify').checked;
+
+    try {
+      const res = await fetch('http://localhost:5000/api/notifications/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ emailNotifications, appNotifications })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'فشل الحفظ');
+      alert('✅ ' + data.message);
+    } catch (err) {
+      alert('❌ خطأ: ' + err.message);
+    }
+  });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("token");
+
+    // Helper to fetch JSON with auth header
+    async function fetchJSON(url) {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    // 1. Get user section from profile
+    let userSection;
+    try {
+      const profile = await fetchJSON('http://localhost:5000/api/profile');
+      userSection = profile.section;
+
+      // Add this mapping block:
+  const sectionMap = {
+    "رياضيات": "math",
+    "علوم تجريبية": "science",
+    "آداب": "lettres",
+    "اقتصاد وتصرف": "eco",
+    "علوم إعلامية": "info",
+    "علوم تقنية": "tech"
+  };
+if (sectionMap[userSection]) {
+    userSection = sectionMap[userSection];
+  }
+    } catch {
+      alert('فشل في جلب بيانات المستخدم. يرجى تسجيل الدخول مرة أخرى.');
+      return;
+    }
+
+    const subjectSelect = document.getElementById('subject-select');
+    const liveTeachersContainer = document.getElementById('live-teachers-container');
+
+    // 2. Load subjects by section
+    let subjects = [];
+    try {
+      console.log("User section:", userSection);
+      subjects = await fetchJSON(`http://localhost:5000/api/admin/subjects?section=${encodeURIComponent(userSection)}`);
+      console.log("Subjects returned:", subjects);
+    } catch {
+      subjectSelect.innerHTML = '<option disabled>فشل في تحميل المواد</option>';
+      liveTeachersContainer.innerHTML = '<p>لا يمكن تحميل المعلمين بدون مواد.</p>';
+      return;
+    }
+
+    // Populate subjects dropdown with default placeholder
+    subjectSelect.innerHTML = '<option value="" disabled selected>اختر المادة</option>';
+    subjects.forEach(sub => {
+});
+    if (subjects.length === 0) {
+      subjectSelect.innerHTML = '<option disabled>لا توجد مواد متاحة</option>';
+      liveTeachersContainer.innerHTML = '<p>لا توجد مواد متاحة في هذه الشعبة.</p>';
+      return;
+    }
+    subjects.forEach(sub => {
+      const opt = document.createElement('option');
+      opt.value = sub.name;
+      opt.textContent = sub.name;
+      subjectSelect.appendChild(opt);
+    });
+
+    subjectSelect.addEventListener('change', function() {
+  const selectedSubject = this.value;
+  if (selectedSubject) {
+    loadLiveTeachers(selectedSubject);
+  } else {
+    renderLiveTeachers([]); // Clear the teacher card if nothing is selected
+  }
+});
+
+    // 3. Load live teachers for selected subject
+    async function loadLiveTeachers(subject) {
+      liveTeachersContainer.innerHTML = '<div class="spinner" role="status" aria-label="جاري التحميل"></div>';
+      try {
+        const teachers = await fetchJSON(`http://localhost:5000/api/live/teachers?subject=${encodeURIComponent(subject)}&section=${encodeURIComponent(userSection)}`);
+        renderLiveTeachers(teachers);
+      } catch (e) {
+        liveTeachersContainer.innerHTML = '<p>حدث خطأ أثناء جلب المعلمين.</p>';
+      }
+    }
+
+    // 4. Render teacher cards
+    function renderLiveTeachers(teachers) {
+  const container = document.getElementById('live-teachers-container');
+  if (!teachers || teachers.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; color:#888; padding:2rem;">
+        <i class="fas fa-user-slash" style="font-size:2.5rem; color:#e74c3c;"></i>
+        <div style="margin-top:1rem;">لا يوجد بث مباشر لهذه المادة حالياً.</div>
+      </div>`;
+    return;
+  }
+  const t = teachers[0];
+  container.innerHTML = `
+    <div class="teacher-card glass-card" style="width:100%;margin:0;box-shadow:0 8px 32px rgba(108,74,182,0.10);padding:3rem 2rem;">
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+      <img src="${t.profile_image || 'https://via.placeholder.com/130x130?text=Teacher'}" 
+           alt="صورة المعلم ${t.name}" 
+           class="teacher-avatar" 
+           style="width:130px;height:130px;margin-bottom:1rem;box-shadow:0 2px 12px rgba(108,74,182,0.10);">
+      <span class="teacher-live-badge enhanced-live-badge">مباشر الآن</span>
+    </div>
+    <div class="teacher-name" style="font-size:1.7rem;margin:1.2rem 0 0.5rem 0;text-align:center;">${t.name}</div>
+    <div class="teacher-subject" style="margin-bottom:1rem;display:inline-block;font-size:1.1rem;">${t.subject}</div>
+    <div class="teacher-bio" style="margin-bottom:2rem;text-align:center;color:#555;font-size:1.1rem;">${t.bio || ''}</div>
+    <a href="${t.live_link}" target="_blank" rel="noopener" class="btn btn-primary" 
+       aria-label="انضم للبث المباشر مع ${t.name}" 
+       style="width:100%;font-size:1.2rem;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <i class="fas fa-video"></i> انضم الآن
+    </a>
+  </div>
+`;
+}
+
+    // Load first subject teachers by default
+
+    // 5. Load upcoming and past sessions
+    const upcomingContainer = document.getElementById('upcoming-live-container');
+    const pastContainer = document.getElementById('past-recordings-container');
+    try {
+      const res = await fetch('/api/livesessions/my-stream', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 403) {
+        document.getElementById('live-page').innerHTML = `
+          <div class="glass-card" style="padding: 2rem; text-align: center;">
+            <h3>🚫 هذا المحتوى مخصص للمشتركين فقط</h3>
+            <p>يرجى الاشتراك للوصول إلى جلسات البث المباشر.</p>
+            <a href="/subscribe.html" class="btn btn-primary" style="margin-top: 1rem;">اشترك الآن</a>
+          </div>
+        `;
+        return;
+      }
+
+      if (!res.ok) throw new Error('حدث خطأ أثناء تحميل البيانات.');
+
+      const sessions = await res.json();
+      const now = new Date();
+
+      if (sessions.length === 0) {
+        upcomingContainer.innerHTML = '<p>لا توجد جلسات بث مباشرة حالياً.</p>';
+        pastContainer.innerHTML = '<p>لا توجد تسجيلات متاحة.</p>';
+      } else {
+        upcomingContainer.innerHTML = '';
+        pastContainer.innerHTML = '';
+
+        sessions.forEach(session => {
+          const startTime = new Date(session.startTime);
+          const isUpcoming = startTime > now;
+
+          const card = document.createElement('div');
+          card.className = 'course-card';
+          card.innerHTML = `
+            <h4>${session.title}</h4>
+            <p><i class="fas fa-clock"></i> ${startTime.toLocaleString()}</p>
+            <p><i class="fas fa-book"></i> ${session.subject}</p>
+            <a href="${session.zoomLink}" target="_blank" rel="noopener" class="btn btn-primary">
+              🔴 ${isUpcoming ? 'انضم الآن' : 'رابط الجلسة'}
+            </a>
+            ${!isUpcoming && session.isRecorded && session.recordingURL ? `
+              <a href="${session.recordingURL}" target="_blank" rel="noopener" class="btn btn-secondary" style="margin-top: 0.5rem;">▶️ مشاهدة الإعادة</a>
+            ` : ''}
+          `;
+
+          if (isUpcoming) {
+            upcomingContainer.appendChild(card);
+          } else if (session.isRecorded && session.recordingURL) {
+            pastContainer.appendChild(card);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching live sessions:', err);
+      upcomingContainer.innerHTML = '<p>حدث خطأ أثناء تحميل الجلسات.</p>';
+      pastContainer.innerHTML = '<p>حدث خطأ أثناء تحميل التسجيلات.</p>';
+    }
+  });
+</script>
+
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal">
+  <div class="modal-content glass-card">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2 id="modalPlan">تأكيد الاشتراك</h2>
+    <p id="modalPrice"></p>
+    <button class="btn btn-confirm" id="confirmBtn">تأكيد الدفع</button>
+    <p id="modalMessage" style="margin-top:10px;"></p>
+  </div>
+</div>
+
+<script>
+    window.addEventListener("load", () => {
+    const loader = document.getElementById("loader");
+
+    setTimeout(() => {
+      loader.classList.add("fade-out");
+      setTimeout(() => {
+        loader.style.display = "none";
+      }, 1000); // match fade transition
+    }, 1000); // loader duration (3s)
+  });
+</script>
+
+</body>
+</html>

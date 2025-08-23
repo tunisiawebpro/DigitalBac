@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل الدخول | Digital Bac - منصة الباكالوريا الرقمية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6C4AB6;
+      --primary-light: #8D72E1;
+      --secondary: #FF9B9B;
+      --dark: #2D2727;
+      --light: #F5F5F5;
+      --success: #4BB543;
+      --error: #FF3333;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+    
+    .container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-content {
+      max-width: 600px;
+      text-align: center;
+      color: white;
+      z-index: 2;
+      animation: fadeInUp 1s ease;
+    }
+    
+    .hero-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 900;
+    }
+    
+    .hero-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    
+    .testimonials {
+      text-align: right;
+      margin-top: 2rem;
+    }
+    
+    .testimonial {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1.2rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(5px);
+    }
+    
+    .testimonial-text {
+      font-style: italic;
+      margin-bottom: 0.5rem;
+    }
+    
+    .testimonial-author {
+      font-weight: 700;
+    }
+    
+    /* Decorative Elements */
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+    
+    .circle-2 {
+      width: 150px;
+      height: 150px;
+      bottom: 50px;
+      left: 50px;
+    }
+    
+    /* Form Section */
+    .form-section {
+      width: 100%;
+      max-width: 500px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-color: white;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+      z-index: 10;
+      position: relative;
+    }
+    
+    .form-header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .form-header h2 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-header p {
+      color: #666;
+    }
+    
+    .logo {
+      width: 80px;
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 0.8rem 3rem 0.8rem 1rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Tajawal', sans-serif;
+      transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(108, 74, 182, 0.2);
+      outline: none;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #999;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 74, 182, 0.3);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #666;
+    }
+    
+    .register-link a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+    
+    .forgot-password {
+      text-align: left;
+      margin-top: -1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .forgot-password a {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    
+    .forgot-password a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    
+    /* Social Login */
+    .social-login {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    
+    .social-login p {
+      color: #666;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    
+    .social-login p::before,
+    .social-login p::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 30%;
+      height: 1px;
+      background: #ddd;
+    }
+    
+    .social-login p::before {
+      right: 0;
+    }
+    
+    .social-login p::after {
+      left: 0;
+    }
+    
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    
+    .social-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+      transform: translateY(-3px);
+    }
+    
+    .facebook {
+      background: #3b5998;
+    }
+    
+    .google {
+      background: #DB4437;
+    }
+    
+    .twitter {
+      background: #1DA1F2;
+    }
+    
+    /* Form Validation */
+    .error-message {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+    
+    .form-group.error .error-message {
+      display: block;
+    }
+    
+    .form-group.error .form-control {
+      border-color: var(--error);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+  .container {
+    height: 100vh !important;
+    min-height: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+  }
+  .form-section,
+  .hero-section {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+  .form-section {
+    margin: 0 auto !important;
+  }
+}
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+    
+    /* Loading State */
+    .btn.loading {
+      position: relative;
+      pointer-events: none;
+    }
+    
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      border: 3px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Success Message */
+    .welcome-message {
+      display: none;
+      text-align: center;
+      animation: fadeInUp 0.5s ease;
+    }
+    
+    .welcome-message i {
+      font-size: 4rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+    
+    .user-info {
+      background: rgba(108, 74, 182, 0.1);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      text-align: right;
+    }
+    
+    .user-info p {
+      margin-bottom: 0.5rem;
+    }
+    
+    .user-info strong {
+      color: var(--primary);
+    }
+    
+    .logout-btn {
+      background: var(--error);
+      margin-top: 1rem;
+    }
+    
+    .logout-btn:hover {
+      background: #e60000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+      
+      <div class="hero-content">
+        <img src="image/logo0.png" alt="Digital Bac Logo" class="logo" style="width: 180px; height: auto;">
+        <h1>مرحبًا بك إلى Digital Bac</h1>
+        <p>استكمل رحلتك التعليمية نحو النجاح في الباكالوريا مع أفضل المنصات التعليمية في تونس</p>
+      </div>
+    </div>
+    
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="form-header">
+        <h2>تسجيل الدخول</h2>
+        <p>أدخل بياناتك للوصول إلى حسابك</p>
+      </div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">البريد الإلكتروني</label>
+          <input type="email" id="email" class="form-control" placeholder="example@email.com" required>
+          <i class="fas fa-envelope input-icon"></i>
+          <div class="error-message">البريد الإلكتروني غير صالح</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">كلمة المرور</label>
+          <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور" required>
+          <i class="fas fa-lock input-icon"></i>
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('password')"></i>
+          <div class="error-message">كلمة المرور مطلوبة</div>
+        </div>
+        
+        <div class="forgot-password">
+          <a href="forget-password.html">نسيت كلمة المرور؟</a>
+        </div>
+        
+        <button type="submit" class="btn" id="loginBtn">تسجيل الدخول</button>
+        
+        <div class="register-link">
+          ليس لديك حساب؟ <a href="inscription.html">إنشاء حساب جديد</a>
+        </div>
+        
+      </form>
+      
+      <div class="welcome-message" id="welcomeMessage">
+        <i class="fas fa-check-circle"></i>
+        <h3>مرحبًا بك!</h3>
+        
+        <div class="user-info">
+          <p><strong>الاسم:</strong> <span id="userName"></span></p>
+          <p><strong>البريد الإلكتروني:</strong> <span id="userEmail"></span></p>
+          <p><strong>الشعبة:</strong> <span id="userBranch"></span></p>
+        </div>
+        <a id="dashboardBtn" href="dashboard.html" class="btn" style="background-color: var(--primary-light); margin-bottom: 1rem;">
+  دخول المنصة
+</a>
+        <button class="btn logout-btn" id="logoutBtn">تسجيل الخروج</button>
+      </div>
+    </div>
+  </div>
+  <script>
+/* ===============  HELPERS  =============== */
+function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+async function fetchFullProfile(token) {
+  try {
+    const res = await fetch('http://localhost:5000/api/profile', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  if (!res.ok) throw new Error('Failed to fetch profile');
+    return await res.json();
+  } catch (err) {
+    console.error('Profile fetch error:', err);
+    return null;
+  }
+}
+
+/* ===============  MAIN  =============== */
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm      = document.getElementById('loginForm');
+  const loginBtn       = document.getElementById('loginBtn');
+  const welcomeMessage = document.getElementById('welcomeMessage');
+  const logoutBtn      = document.getElementById('logoutBtn');
+  const dashboardBtn   = document.getElementById('dashboardBtn');
+
+  // Toggle password
+  const passwordToggleIcon = document.querySelector('.password-toggle');
+  passwordToggleIcon?.addEventListener('click', () => togglePassword('password'));
+
+  function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = field.parentElement.querySelector('.password-toggle');
+    if (field.type === 'password') {
+      field.type = 'text';
+      icon?.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      field.type = 'password';
+      icon?.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  }
+
+  function validateForm() {
+    let isValid = true;
+    const email    = document.getElementById('email');
+    const password = document.getElementById('password');
+    email.parentElement.classList.remove('error');
+    password.parentElement.classList.remove('error');
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+      email.parentElement.classList.add('error');
+      isValid = false;
+    }
+    if (password.value.length < 6) {
+      password.parentElement.classList.add('error');
+      isValid = false;
+    }
+    return isValid;
+  }
+
+  function showWelcome(user) {
+    document.getElementById('userName').textContent   = user.name    || '';
+    document.getElementById('userEmail').textContent  = user.email   || '';
+    document.getElementById('userBranch').textContent = user.section || '';
+
+    loginForm.style.display      = 'none';
+    welcomeMessage.style.display = 'block';
+
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const email    = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    loginBtn.classList.add('loading');
+    loginBtn.disabled = true;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Login failed');
+
+      // 1) Save tokens first
+      localStorage.setItem('token', data.token);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+
+      // 2) Fetch full profile NOW (so dashboard has all fields immediately)
+      const fullUser = await fetchFullProfile(data.token);
+
+      if (fullUser) {
+        localStorage.setItem('user', JSON.stringify(fullUser));
+        showWelcome(fullUser);
+      } else {
+        // fallback to minimal data from login response
+        const userData = {
+          id     : data.user?.id     ?? data.id,
+          name   : data.user?.name   ?? data.name,
+          email  : data.user?.email  ?? data.email,
+          phone  : data.user?.phone  ?? data.phone,
+          section: data.user?.section?? data.section
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        showWelcome(userData);
+      }
+    } catch (err) {
+      alert(err.message);
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
+    }
+  });
+
+  logoutBtn?.addEventListener('click', () => {
+    localStorage.clear();
+    loginForm.style.display      = 'block';
+    welcomeMessage.style.display = 'none';
+    loginForm.reset();
+    loginBtn.disabled = false;
+    loginBtn.classList.remove('loading');
+  });
+
+  document.querySelectorAll('.form-control').forEach(input => {
+    input.addEventListener('input', function () {
+      if (this.value.trim() !== '') this.parentElement.classList.remove('error');
+    });
+  });
+
+  dashboardBtn?.addEventListener('click', () => {
+    window.location.href = 'dashboard.html';
+  });
+});
+</script>
+
+</body>
+</html>

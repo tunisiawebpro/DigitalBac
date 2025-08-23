@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms and Conditions | Digital Bac</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6C4AB6;
+      --primary-light: #8D72E1;
+      --white: #fff;
+      --light-bg: #f8f9fa;
+      --text-dark: #333;
+      --text-light: #666;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* Header Styles */
+    header {
+      background: var(--white);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    #menu-btn {
+      display: none;
+      font-size: 1.5rem;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .desktop-nav {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .desktop-nav a {
+      color: var(--text-dark);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .desktop-nav a:hover, .desktop-nav a.active {
+      color: var(--primary);
+    }
+
+    .logo-container {
+      position: absolute;
+      right: 50%;
+      transform: translateX(50%);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-container img {
+      height: 60px;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .auth-buttons a {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .login-btn {
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      transition: all 0.3s;
+    }
+
+    .login-btn:hover {
+      background-color: rgba(108, 74, 182, 0.1);
+    }
+
+    .signup-btn {
+      background-color: var(--primary);
+      color: var(--white);
+      transition: all 0.3s;
+    }
+
+    .signup-btn:hover {
+      background-color: var(--primary-light);
+    }
+
+    #mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      background-color: var(--white);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    #mobile-menu a {
+      padding: 0.5rem;
+      color: var(--text-dark);
+      text-decoration: none;
+    }
+
+    #mobile-menu a:hover {
+      color: var(--primary);
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .terms-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .header h1 {
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .header h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: 0;
+      width: 50%;
+      height: 3px;
+      background: var(--primary-light);
+      border-radius: 3px;
+    }
+
+    .header p {
+      color: var(--text-light);
+    }
+
+    .term-section {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px dashed #ddd;
+    }
+
+    .term-section:last-child {
+      border-bottom: none;
+    }
+
+    .term-section h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .term-section h2 i {
+      font-size: 1.2rem;
+    }
+
+    .term-section p, .term-section li {
+      color: var(--text-dark);
+      line-height: 1.8;
+      margin-bottom: 0.8rem;
+    }
+
+    .term-section ul {
+      list-style-type: none;
+      padding-right: 1rem;
+    }
+
+    .term-section li {
+      position: relative;
+      padding-right: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .term-section li::before {
+      content: '•';
+      color: var(--primary-light);
+      font-weight: bold;
+      position: absolute;
+      right: 0;
+    }
+
+    .acceptance-box {
+      background: var(--light-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 3rem;
+      border-right: 4px solid var(--primary);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 1.5rem;
+    }
+
+    .checkbox-group input {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-family: 'Tajawal';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Enhanced Footer */
+    footer {
+      background-color: var(--primary);
+      color: var(--white);
+      padding: 3rem 1rem;
+      margin-top: 3rem;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-logo img {
+      height: 40px;
+    }
+
+    .footer-logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .footer-about p {
+      margin-top: 1rem;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .footer-links h3, .footer-contact h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .footer-links h3::after, .footer-contact h3::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 0;
+      width: 50%;
+      height: 2px;
+      background: var(--white);
+    }
+
+    .footer-links ul {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-links a {
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.9;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+    }
+
+    .footer-links i {
+      font-size: 0.8rem;
+    }
+
+    .footer-contact p {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .footer-contact i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .social-links a {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .social-links a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .copyright {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    /* Toast Notification */
+    #toast-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  min-width: 300px;
+  max-width: 90vw;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  animation: fadeIn 0.4s ease;
+  justify-content: center;
+}
+
+.toast.success {
+  background-color: #4caf50;
+}
+.toast.error {
+  background-color: #f44336;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9) translate(-50%, -50%); }
+  to   { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+}
+
+    /* Responsive Styles */
+    @media (max-width: 1024px) {
+      .logo-container {
+        position: static;
+        transform: none;
+        margin-right: auto;
+      }
+      
+      .desktop-nav {
+        display: none;
+      }
+      
+      #menu-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .terms-card {
+        padding: 1.5rem;
+      }
+      
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .footer-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="terms-card">
+      <div class="header">
+        <h1><i class="fas fa-file-contract"></i> الشروط والأحكام</h1>
+        
+      </div>
+
+      <div class="terms-content">
+        <!-- 1. مقدمة -->
+        <div class="term-section">
+          <h2><i class="fas fa-info-circle"></i> 1. مقدمة</h2>
+          <p>مرحبًا بكم في منصة <strong>Digital Bac</strong>، المنصة التعليمية الرائدة في التحضير لامتحان البكالوريا في تونس. يرجى قراءة هذه الشروط والأحكام بعناية قبل استخدام المنصة.</p>
+          <p>بتسجيلك أو استخدامك للمنصة، فإنك توافق على الالتزام بهذه الشروط والأحكام كاملة. إذا كنت لا توافق على أي بند من هذه الشروط، يرجى عدم استخدام المنصة.</p>
+        </div>
+
+        <!-- 2. تعريفات -->
+        <div class="term-section">
+          <h2><i class="fas fa-book"></i> 2. تعريفات</h2>
+          <ul>
+            <li><strong>"المنصة":</strong> تشير إلى موقع وتطبيق Digital Bac وجميع الخدمات المرتبطة به.</li>
+            <li><strong>"المستخدم":</strong> أي شخص مسجل أو يزور المنصة سواء كان طالباً، ولي أمر، أو معلمًا.</li>
+            <li><strong>"المحتوى التعليمي":</strong> جميع الدروس، الاختبارات، النماذج، فيديوهات مباشرة و المواد التعليمية المتاحة على المنصة.</li>
+            <li><strong>"الحساب":</strong> الملف الشخصي للمستخدم الذي يحتوي على بياناته وأنشطته على المنصة.</li>
+          </ul>
+        </div>
+
+        <!-- 3. الاشتراكات والدفع -->
+        <div class="term-section">
+          <h2><i class="fas fa-credit-card"></i> 3. الاشتراكات والدفع</h2>
+          <ul>
+            <li>جميع الأسعار بالدينار التونسي وتشمل الضرائب المفروضة حسب القانون التونسي.</li>
+            <li>لا يوجد استرداد للأموال بعد الشحن إلا في حالات الأخطاء الفنية من جانب المنصة، وذلك خلال 7 أيام من عملية الدفع.</li>
+            <li>نحن نستخدم أنظمة دفع معتمدة وآمنة مثل D17 و PayPal لضمان أمان معاملاتك المالية.</li>
+          </ul>
+        </div>
+
+        <!-- 4. مسؤوليات المستخدم -->
+        <div class="term-section">
+          <h2><i class="fas fa-user-shield"></i> 4. مسؤوليات المستخدم</h2>
+          <p>يتعهد المستخدم بعدم القيام بأي من الأمور التالية:</p>
+          <ul>
+            <li>مشاركة بيانات الدخول إلى الحساب أو السماح لأي شخص آخر باستخدام الحساب.</li>
+            <li>نسخ، توزيع، بيع، أو إعادة إنتاج أي جزء من المحتوى التعليمي بأي وسيلة كانت.</li>
+            <li>استخدام المنصة لأغراض غير تعليمية أو أنشطة غير قانونية.</li>
+            <li>محاولة اختراق أو تعطيل أنظمة المنصة بأي طريقة.</li>
+            <li>نشر أي محتوى مسيء، غير لائق، أو ينتهك حقوق الآخرين.</li>
+          </ul>
+        </div>
+
+        <!-- 5. الخصوصية -->
+        <div class="term-section">
+          <h2><i class="fas fa-lock"></i> 5. الخصوصية وحماية البيانات</h2>
+          <p>نحن نلتزم بحماية خصوصيتك وبياناتك الشخصية :</p>
+          <ul>
+            <li>نجمع فقط البيانات الضرورية لتقديم الخدمة وتحسين تجربة المستخدم.</li>
+            <li>لا نبيع أو نشارك بياناتك مع أطراف ثالثة لأغراض تسويقية.</li>
+            <li>يمكنك طلب حذف بياناتك الشخصية في أي وقت عن طريق التواصل مع فريق الدعم.</li>
+          </ul>
+          <p>يمكنك الاطلاع على سياسة الخصوصية الكاملة <a href="privacy.html" style="color: var(--primary);">من هنا</a>.</p>
+        </div>
+
+        <!-- 6. الملكية الفكرية -->
+        <div class="term-section">
+          <h2><i class="fas fa-copyright"></i> 6. الملكية الفكرية</h2>
+          <p>جميع حقوق الملكية الفكرية للمحتوى التعليمي والمنصة محفوظة لشركة Digital Bac ما لم يُنص على خلاف ذلك.</p>
+          <ul>
+            <li>يمنع استخدام المحتوى لأغراض تجارية دون إذن مسبق.</li>
+            <li>يسمح للطلاب باستخدام المحتوى لأغراضهم الدراسية الشخصية فقط.</li>
+            <li>أي انتهاك للحقوق الفكرية قد يعرض المستخدم للمساءلة القانونية.</li>
+          </ul>
+        </div>
+
+        <!-- 7. التعديلات -->
+        <div class="term-section">
+          <h2><i class="fas fa-edit"></i> 7. التعديلات على الشروط</h2>
+          <p>نحتفظ بالحق في تعديل هذه الشروط والأحكام عند الحاجة، مع إشعار المستخدمين قبل 30 يومًا من سريان التعديلات.</p>
+          <p>سيتم إعلام المستخدمين بأي تغييرات عبر البريد الإلكتروني أو من خلال إشعارات داخل المنصة.</p>
+          <p>استمرارك في استخدام المنصة بعد التعديلات يعني موافقتك على الشروط المعدلة.</p>
+        </div>
+
+        <!-- 8. إنهاء الخدمة -->
+        <div class="term-section">
+          <h2><i class="fas fa-ban"></i> 8. إنهاء الخدمة</h2>
+          <p>نحتفظ بالحق في تعليق أو إنهاء حساب أي مستخدم في الحالات التالية:</p>
+          <ul>
+            <li>خرق أي من بنود هذه الشروط والأحكام.</li>
+            <li>الاستخدام غير القانوني أو غير المصرح به للمنصة.</li>
+            <li>أي سلوك يضر بالمنصة أو مستخدميها.</li>
+          </ul>
+        </div>
+
+        <!-- 9. الاتصال بنا -->
+        <div class="term-section">
+          <h2><i class="fas fa-headset"></i> 9. الاتصال بنا</h2>
+          <p>لأية استفسارات حول الشروط والأحكام أو الخدمات المقدمة، يرجى التواصل عبر:</p>
+          <ul>
+            <li><i class="fas fa-envelope"></i> البريد الإلكتروني: contact@digitalbac.com</li>
+            <li><i class="fas fa-phone"></i> الهاتف: 1234567890+</li>
+            
+          </ul>
+        </div>
+
+        <!-- Acceptance Box -->
+        <div class="acceptance-box">
+          <div class="checkbox-group">
+            <input type="checkbox" id="accept-terms">
+            <label for="accept-terms">أقر بأني قد قرأت وفهمت وأوافق على هذه الشروط والأحكام بكاملها</label>
+          </div>
+          <button id="confirm-terms" class="btn btn-primary" disabled>
+            <i class="fas fa-check-circle"></i> تأكيد الموافقة
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-about">
+        <div class="footer-logo">
+          <img src="image/LOGO1-removebg-preview.png" alt="Digital Bac Logo">
+          <span class="footer-logo-text">Digital Bac</span>
+        </div>
+        <p>منصة تعليمية رائدة في التحضير لامتحان البكالوريا في تونس، نقدم محتوى تعليمي عالي الجودة واختبارات تفاعلية لمساعدة الطلاب على تحقيق أفضل النتائج.</p>
+      </div>
+      
+      <div class="footer-links">
+        <h3>روابط سريعة</h3>
+        <ul>
+          <li><a href="index.html"><i class="fas fa-chevron-left"></i> الرئيسية</a></li>
+          <li><a href="about us.html"><i class="fas fa-chevron-left"></i> من نحن</a></li>
+          <li><a href="contact us2.html"><i class="fas fa-chevron-left"></i> اتصل بنا</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-contact">
+        <h3>تواصل معنا</h3>
+       
+        <p><i class="fas fa-phone"></i> 1234567890+</p>
+        <p><i class="fas fa-envelope"></i> contact@digitalbac.dz</p>
+        
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://www.instagram.com/digital__bac/" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="copyright">
+      <p>جميع الحقوق محفوظة &copy; 2025 Digital Bac</p>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const acceptCheckbox = document.getElementById('accept-terms');
+    const confirmButton = document.getElementById('confirm-terms');
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    acceptCheckbox.addEventListener('change', function () {
+      confirmButton.disabled = !this.checked;
+    });
+
+    confirmButton.addEventListener('click', function () {
+      if (acceptCheckbox.checked) {
+        showToast('success', '✅ تم تأكيد الموافقة بنجاح!', 2500);
+        setTimeout(() => {
+          window.location.href = 'inscription.html';
+        }, 2500);
+      } else {
+        showToast('error', '❌ يجب الموافقة على الشروط أولاً', 3000);
+      }
+    });
+
+    menuBtn?.addEventListener('click', function () {
+      mobileMenu?.classList.toggle('hidden');
+    });
+
+    function showToast(type, message, duration) {
+      const toastContainer = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), duration);
+    }
+
+    window.showToast = showToast;
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Digital Bac</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C4AB6;
+            --primary-light: #8D72E1;
+            --secondary: #FF9B9B;
+            --dark: #1E1E2D;
+            --light: #F5F7FA;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #f9f9f9;
+            color: var(--dark);
+            line-height: 1.8;  
+        }
+
+
+        .contact-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(108, 74, 182, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 74, 182, 0.3);
+        }
+
+        .contact-icon {
+            transition: all 0.3s ease;
+        }
+
+        .contact-icon:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(108, 74, 182, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(108, 74, 182, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(108, 74, 182, 0); }
+        }
+        #toast.show {
+  opacity: 1;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between relative">
+            
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden text-blue-600 text-2xl focus:outline-none">
+                ☰
+            </button>
+
+            <!-- Left (Nav links - hidden on mobile) -->
+            <nav class="hidden md:flex space-x-6 space-x-reverse text-sm text-gray-700">
+                <a href="index.html" class="hover:text-blue-600 transition">الرئيسية</a>
+                <a href="about us.html" class="hover:text-blue-600 transition">من نحن</a>
+                <a href="contact us2.html" class="text-blue-600 font-bold transition">اتصل بنا</a>
+            </nav>
+
+            <!-- Logo before Digital Bac -->
+            <div class="absolute right-1/2 translate-x-1/2 flex flex-row-reverse items-center">
+                <img src="image/logo0.png" alt="Logo" class="h-24 w-auto object-contain -mr-1-5" />
+                <h1 class="text-2xl font-bold text-purple-600">Digital Bac</h1>
+            </div>
+
+            <!-- Right (Buttons) -->
+            <div class="hidden md:flex items-center gap-3">
+                <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+                <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-purple-700 transition">سجل الآن</a>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden hidden flex-col gap-4 px-6 py-4 bg-white border-t border-gray-200">
+            <a href="index.html" class="text-gray-700 hover:text-blue-600 transition">الرئيسية</a>
+            <a href="about us.html" class="text-blue-600 font-bold transition">من نحن</a>
+            <a href="contact us2.html" class="text-gray-700 hover:text-blue-600 transition">اتصل بنا</a>
+            <a href="login.html" class="text-purple-600 border border-purple-600 px-4 py-2 rounded-xl hover:bg-purple-50 transition">تسجيل الدخول</a>
+            <a href="inscription.html" class="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-purple-700 transition">سجل الآن</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="contact-gradient text-white py-20 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="container mx-auto px-6 relative z-10 text-center" data-aos="fade-down">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">تواصل مع فريق Digital Bac</h1>
+            <p class="text-xl max-w-2xl mx-auto opacity-90">نحن هنا لمساعدتك في أي استفسار لديك. فريق الدعم متاح على مدار الساعة</p>
+            
+            <!-- Floating Contact Icons -->
+            <div class="absolute -top-10 -right-10 text-yellow-300 text-6xl opacity-20 floating" style="animation-delay: 0.2s;">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="absolute bottom-10 left-10 text-white text-5xl opacity-20 floating" style="animation-delay: 0.5s;">
+                <i class="fas fa-headset"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section  class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row gap-12">
+                <!-- Contact Form -->
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 md:p-10">
+                        <h2 class="text-3xl font-bold text-purple-700 mb-6">أرسل لنا رسالة</h2>
+                        
+                        <form id="contact-form" action="contact.php" method="POST" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="name" class="block text-gray-700 mb-2">الاسم الكامل</label>
+                                    <input name="name" type="text" id="name" class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-gray-700 mb-2">البريد الإلكتروني</label>
+                                    <input name="email" type="email" id="email" class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="subject" class="block text-gray-700 mb-2">الموضوع</label>
+                                <input name="subject" type="text" id="subject" class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                            </div>
+                            
+                            <div>
+                                <label for="message" class="block text-gray-700 mb-2">الرسالة</label>
+                                <textarea name="message" id="message" rows="5" class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="submit-btn text-white font-bold py-3 px-8 rounded-lg w-full md:w-auto">
+                                إرسال الرسالة <i class="fas fa-paper-plane mr-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="lg:w-1/2 space-y-8" data-aos="fade-left">
+                    <!-- Contact Card 1 -->
+                    <div class="contact-card bg-white rounded-2xl shadow-xl p-8 flex items-start gap-6 transition transform hover:scale-[1.02]">
+                        <div class="bg-purple-100 text-purple-700 p-4 rounded-full contact-icon">
+                            <i class="fas fa-phone-alt text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">اتصل بنا</h3>
+                            <p class="text-gray-600">لديك استفسار عاجل؟ نحن هنا لمساعدتك</p>
+                            <p class="text-purple-700 font-semibold mt-3">+216 99 999 999</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Card 2 -->
+                    <div class="contact-card bg-white rounded-2xl shadow-xl p-8 flex items-start gap-6 transition transform hover:scale-[1.02]">
+                        <div class="bg-purple-100 text-purple-700 p-4 rounded-full contact-icon">
+                            <i class="fas fa-envelope text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">البريد الإلكتروني</h3>
+                            <p class="text-gray-600">أرسل لنا بريدًا إلكترونيًا وسنرد عليك خلال 24 ساعة</p>
+                            <p class="text-purple-700 font-semibold mt-3">support@digitalbac.com</p>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <!-- Social Media -->
+                    <div class="contact-card bg-white rounded-2xl shadow-xl p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">تابعنا على وسائل التواصل</h3>
+                        <div class="flex gap-4">
+                            <a href="#" class="bg-purple-100 text-purple-700 w-12 h-12 rounded-full flex items-center justify-center contact-icon hover:bg-purple-700 hover:text-white">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="bg-purple-100 text-purple-700 w-12 h-12 rounded-full flex items-center justify-center contact-icon hover:bg-purple-700 hover:text-white">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="bg-purple-100 text-purple-700 w-12 h-12 rounded-full flex items-center justify-center contact-icon hover:bg-purple-700 hover:text-white">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="bg-purple-100 text-purple-700 w-12 h-12 rounded-full flex items-center justify-center contact-icon hover:bg-purple-700 hover:text-white">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <!-- FAQ Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4" data-aos="fade-up">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-purple-700">أسئلة متكررة</h2>
+                <p class="text-gray-600 mt-2">إجابات على الأسئلة الأكثر شيوعًا</p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-6 text-right focus:outline-none">
+                        <span class="text-lg font-semibold text-gray-800">كم من الوقت يستغرق الرد على استفساري؟</span>
+                        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-6 pb-6 hidden">
+                        <p class="text-gray-600">نهدف للرد على جميع الاستفسارات خلال 24 ساعة عمل. في حالات الذروة قد يستغرق الرد حتى 48 ساعة.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-6 text-right focus:outline-none">
+                        <span class="text-lg font-semibold text-gray-800">هل لديكم دعم فني على مدار الساعة؟</span>
+                        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-6 pb-6 hidden">
+                        <p class="text-gray-600">نعم، فريق الدعم الفني لدينا متاح 24/7 عبر الدردشة الحية والهاتف للقضايا العاجلة.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-6 text-right focus:outline-none">
+                        <span class="text-lg font-semibold text-gray-800">كيف يمكنني متابعة طلبي أو شكواي؟</span>
+                        <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-6 pb-6 hidden">
+                        <p class="text-gray-600">سيتم إرسال رقم متابعة فريد إلى بريدك الإلكتروني بعد تقديم الطلب. يمكنك استخدامه لمتابعة حالة طلبك عبر صفحة "تتبع الطلبات" على موقعنا.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-purple-700 text-white">
+        <div class="container mx-auto px-4 text-center" data-aos="zoom-in">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6">هل لديك أي أسئلة أخرى؟</h2>
+                <p class="text-xl mb-8 opacity-90">فريق الدعم لدينا مستعد لمساعدتك في أي وقت. لا تتردد في التواصل معنا.</p>
+                <a href="#" class="inline-block bg-white text-purple-700 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition">
+                    ابدأ الدردشة الآن <i class="fas fa-comment-dots mr-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div class="md:w-1/3">
+                    <div class="flex items-center mb-4">
+                        <img src="image/logo0.png" alt="Logo" class="h-16 mr-3">
+                        <h3 class="text-2xl font-bold">Digital Bac</h3>
+                    </div>
+                    <p class="text-gray-400">منصة تعليمية رائدة لتلاميذ البكالوريا في تونس، نقدم محتوى تعليمي عالي الجودة بطرق مبتكرة.</p>
+                </div>
+                
+                <div class="md:w-1/3">
+                    <h4 class="text-xl font-bold mb-4">روابط سريعة</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition">الرئيسية</a></li>
+                        <li><a href="why us.html" class="text-gray-400 hover:text-white transition">من نحن</a></li>
+                        <li><a href="contact us2.html" class="text-gray-400 hover:text-white transition">اتصل بنا</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">الشروط والأحكام</a></li>
+                    </ul>
+                </div>
+                
+                <div class="md:w-1/3">
+                    <h4 class="text-xl font-bold mb-4">النشرة البريدية</h4>
+                    <p class="text-gray-400 mb-4">اشترك ليصلك كل جديد عن المنصة والعروض الخاصة</p>
+                    <form class="flex">
+                        <input type="email" placeholder="بريدك الإلكتروني" class="px-4 py-2 rounded-r-lg w-full focus:outline-none text-gray-800">
+                        <button type="submit" class="bg-purple-600 px-4 py-2 rounded-l-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2025 Digital Bac. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation
+        AOS.init({
+            duration: 300,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Mobile menu toggle
+        const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+    mobileMenu.classList.toggle('flex');
+  });
+
+
+
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('i');
+                
+                // Toggle content
+                content.classList.toggle('hidden');
+                
+                // Rotate icon
+                icon.classList.toggle('transform');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // Form submission animation
+        document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('contact-form');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> جاري الإرسال';
+    btn.disabled = true;
+
+    const formData = {
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      subject: document.getElementById('subject').value.trim(),
+      message: document.getElementById('message').value.trim()
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (res.ok) {
+        btn.innerHTML = '<i class="fas fa-check mr-2"></i> تم الإرسال بنجاح';
+        btn.classList.add('bg-green-500');
+        form.reset();
+
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      } else {
+        throw new Error('فشل الإرسال');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      btn.innerHTML = '<i class="fas fa-times mr-2"></i> فشل الإرسال';
+      btn.classList.add('bg-red-500');
+    }
+
+    setTimeout(() => {
+      btn.innerHTML = 'إرسال الرسالة <i class="fas fa-paper-plane mr-2"></i>';
+      btn.classList.remove('bg-green-500', 'bg-red-500');
+      btn.disabled = false;
+    }, 2500);
+  });
+});
+    
+
+
+  </script>
+  <!-- Toast Notification -->
+<div id="toast"
+     class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white text-lg font-bold px-8 py-4 rounded-xl shadow-2xl opacity-0 transition-opacity duration-500 z-50">
+    تم الإرسال بنجاح
+</div>
+</body>
+</html>

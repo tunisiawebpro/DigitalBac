@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Digital Bac</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 260px;
+      background: #6C4AB6;
+      color: white;
+      padding: 2rem 1rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar ul li {
+      margin-bottom: 1rem;
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 1.1rem;
+      display: block;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .sidebar ul li a:hover {
+      background: #8D72E1;
+    }
+    .main {
+      margin-right: 260px;
+      padding: 2rem;
+      width: 100%;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .topbar h1 {
+      font-size: 1.8rem;
+      color: #333;
+    }
+    .logout-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background: #c0392b;
+    }
+    .card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.card .icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #6C4AB6;
+}
+.card.users .icon { color: #6C4AB6; }
+.card.subjects .icon { color: #3498db; }
+.card.videos .icon { color: #f39c12; }
+.card.quizzes .icon { color: #e74c3c; }
+    @media (max-width: 768px) {
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+      .main {
+        margin-right: 0;
+      }
+    }
+    .users-table-section {
+  background: #70416c;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+#usersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#usersTable th, #usersTable td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+#usersTable th {
+  background-color: var(--primary);
+  color: white;
+}
+
+.delete-btn {
+  background-color: var(--error);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #e60000;
+}
+.add-user-btn {
+  background-color: #4BB543;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.add-user-btn:hover {
+  background-color: #3da436;
+}
+.edit-btn {
+  background-color: #1e1bc4; /* لون أخضر */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit-btn:hover {
+  background-color: #399934;
+}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-bottom: 1rem;
+  color: #6C4AB6;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.save-btn {
+  background-color: #4BB543;
+}
+
+.cancel-btn {
+  background-color: #e74c3c;
+}
+.subjects-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem; margin-top: 1.5rem;
+    }
+    .subject-card {
+      background: #a018b3; padding: 1rem; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .subject-card i {
+      font-size: 1.5rem; color: #6C4AB6;
+    }
+    .subject-card span {
+      font-weight: 600; color: #333;
+    }
+     .modal input {
+    border: 1px solid #aa1ac7;
+    border-radius: 5px;
+  }
+  .modal button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #2b6cb0;
+    color: rgb(135, 20, 170);
+    border: none;
+    border-radius: 5px;
+  }
+  @media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.payments-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+  
+  .payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  
+  .payments-table th, 
+  .payments-table td {
+    padding: 0.75rem;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .payments-table th {
+    background-color: #6C4AB6;
+    color: white;
+  }
+  
+  .payments-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .btn-success {
+    background-color: #4BB543;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0 3px;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0 3px;
+  }
+  
+  .payment-status-pending {
+    color: #f39c12;
+  }
+  
+  .payment-status-success {
+    color: #4BB543;
+  }
+  
+  .payment-status-refused {
+    color: #e74c3c;
+  }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>لوحة المشرف</h2>
+    <ul>
+      <li><a href="#">إحصائيات عامة</a></li>
+      <li><a href="#">إدارة المستخدمين</a></li>
+      <li><a href="#">إدارة المواد</a></li>
+      <li><a href="#">إدارة المدفوعات</a></li>
+      <li><a href="#">إدارة الفيديوهات</a></li>
+      <li><a href="#">إدارة الفروض</a></li>
+      <li><a href="#">إعدادات المنصة</a></li>
+    </ul>
+  </div>
+
+  <div class="main">
+  <div class="topbar">
+    <h1>مرحباً بك، مشرف</h1>
+    <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <div class="cards" id="mainDashboard">
+  <div class="card users">
+    <div class="icon"><i class="fas fa-users"></i></div>
+    <h3>عدد المستخدمين</h3>
+    <p id="userCount">--</p>
+  </div>
+  <div class="card subjects">
+    <div class="icon"><i class="fas fa-book-open"></i></div>
+    <h3>عدد المواد</h3>
+    <p id="subjectCount">0</p>
+  </div>
+  <div class="card videos">
+    <div class="icon"><i class="fas fa-video"></i></div>
+    <h3>عدد الفيديوهات</h3>
+    <p id="videoCount">--</p>
+  </div>
+  <div class="card quizzes">
+    <div class="icon"><i class="fas fa-file-alt"></i></div>
+    <h3>عدد الفروض</h3>
+    <p id="quizCount">--</p>
+  </div>
+</div>
+<section class="users-table-section" id="manageUsersSection" style="display: none;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>قائمة المستخدمين</h2>
+    <button class="add-user-btn" onclick="showAddUserForm()">➕ إضافة مستخدم</button>
+  </div>
+   <table id="usersTable">
+    <thead>
+      <tr>
+        <th>الرقم</th>
+        <th>الاسم</th>
+        <th>البريد الإلكتروني</th>
+        <th>الشعبة</th>
+        <th>رقم الهاتف</th>
+        <th>إجراء</th>
+      </tr>
+    </thead>
+    <tbody id="usersTableBody">
+      <!-- المستخدمون سيتم إضافتهم هنا عبر JavaScript -->
+    </tbody>
+  </table>
+</section>
+<section class="users-table-section" id="manageSubjectsSection" style="display: none;">
+  <h2 style="margin-bottom: 1rem;">المواد حسب الشعبة</h2>
+
+  <label for="section">اختر الشعبة:</label>
+  <select id="sectionSelector" onchange="loadSubjectsForSection()" style="margin-bottom: 1rem; padding: 0.5rem;">
+    <option value="">اختر شعبة</option>
+    <option value="math">رياضيات</option>
+    <option value="science">علوم تجريبية</option>
+    <option value="eco">اقتصاد وتصرف</option>
+    <option value="lettres">آداب</option>
+    <option value="tech">تقنية</option>
+    <option value="info">علوم الإعلامية</option>
+  </select>
+  
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+  <h3>قائمة المواد</h3>
+  <button onclick="showAddSubjectForm()" class="add-user-btn">➕ إضافة مادة</button>
+</div>
+
+<table id="usersTable" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+  <thead>
+  <tr>
+    <th>الرقم</th>
+    <th>اسم المادة</th>
+    <th>الشعبة</th>
+    <th>إجراء</th>
+  </tr>
+</thead>
+  <tbody id="subjectsTableBody">
+    <!-- المواد ستظهر هنا -->
+  </tbody>
+</table>
+</section>
+
+<section class="payments-section" id="managePaymentsSection" style="display: none;">
+  <h2>إدارة عمليات الدفع</h2>
+  <div class="table-responsive">
+  <table class="payments-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>المستخدم</th>
+        <th>المبلغ</th>
+        <th>الطريقة</th>
+        <th>المرجع</th>
+        <th>التاريخ</th>
+        <th>الحالة</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="admin-payments-body">
+      <tr><td colspan="8" style="text-align:center">جاري التحميل...</td></tr>
+    </tbody>
+  </table>
+</section>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function logout() {
+      Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: 'سيتم تسجيل الخروج من الحساب!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'نعم، تسجيل الخروج',
+        cancelButtonText: 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem('token');
+          window.location.href = 'login.html';
+        }
+      });
+    }
+
+  
+  async function fetchUserCount() {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/user-count');
+      const data = await response.json();
+      document.getElementById('userCount').textContent = data.count;
+    } catch (error) {
+      console.error('Error fetching user count:', error);
+    }
+  }
+
+  async function fetchSubjectCount() {
+    try {
+      const res = await fetch('http://localhost:5000/api/admin/stats/subjects');
+      const data = await res.json();
+      document.getElementById('subjectCount').textContent = data.total;
+    } catch (err) {
+      console.error('Error fetching subject count:', err);
+    }
+  }
+  // Use DOMContentLoaded to safely run both
+  document.addEventListener("DOMContentLoaded", function () {
+    fetchUserCount();
+    fetchSubjectCount();  
+
+    // Static for now
+    document.getElementById('videoCount').textContent = '34';
+    document.getElementById('quizCount').textContent = '16';
+
+    // Welcome toast
+    Toastify({
+      text: "مرحباً بك في لوحة تحكم المشرف",
+      duration: 3000,
+      gravity: "top",
+      position: "center",
+      backgroundColor: "linear-gradient(to right, #6C4AB6, #8D72E1)",
+    }).showToast();
+  });
+
+    async function fetchUsers() {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/users');
+      const users = await response.json();
+
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      users.forEach((user, index) => {
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${index + 1}</td>
+    <td>${user.name}</td>
+    <td>${user.email}</td>
+    <td>${user.section || 'غير محددة'}</td>
+    <td>${user.phone || '---'}</td>
+    <td>
+  <button class="edit-btn" onclick="openEditModal(${user.id}, '${user.name}', '${user.email}', '${user.section || ''}', '${user.phone || ''}')">تعديل</button>
+  <button class="delete-btn" onclick="deleteUser(${user.id})">حذف</button>
+</td>
+  `;
+  tbody.appendChild(row);
+});
+
+    } catch (err) {
+      console.error('Error fetching users:', err);
+    }
+  }
+
+  async function deleteUser(userId) {
+    const confirmDelete = confirm('هل أنت متأكد من حذف هذا المستخدم؟');
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+      alert(result.message);
+      fetchUsers(); // إعادة تحميل الجدول
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      alert('حدث خطأ أثناء الحذف');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    fetchUserCount();
+    fetchUsers();
+  });
+
+  // إظهار قسم المستخدمين عند الضغط من القائمة
+document.querySelectorAll('.sidebar ul li a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const text = e.target.textContent.trim();
+    const dashboard = document.getElementById('mainDashboard');
+    const usersSection = document.getElementById('manageUsersSection');
+    const paymentSection = document.getElementById('managePaymentSection')
+
+    if (text === 'إدارة المستخدمين') {
+      dashboard.style.display = 'none';
+      usersSection.style.display = 'block';
+    } else {
+      dashboard.style.display = 'block';
+      usersSection.style.display = 'none';
+    }
+  });
+});
+
+// إظهار وإخفاء النموذج
+function showAddUserForm() {
+  document.getElementById('addUserModal').style.display = 'flex';
+}
+function hideAddUserForm() {
+  document.getElementById('addUserModal').style.display = 'none';
+}
+
+// إرسال المستخدم الجديد إلى السيرفر
+async function createUser() {
+  const name = document.getElementById('newUserName').value.trim();
+  const email = document.getElementById('newUserEmail').value.trim();
+  const password = document.getElementById('newUserPassword').value.trim();
+  const section = document.getElementById('newUserSection').value.trim();
+  const phone = document.getElementById('newUserPhone').value.trim();
+
+  if (!name || !email || !password) {
+    alert('الرجاء ملء جميع الحقول');
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:5000/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, section, phone })
+    });
+
+    const data = await res.json();
+    alert(data.message || 'تمت إضافة المستخدم');
+    hideAddUserForm();
+    fetchUsers();
+  } catch (err) {
+    alert('خطأ في إنشاء المستخدم');
+    console.error(err);
+  }
+}
+// لتفادي مشاكل في نقل بيانات النصوص (خاصية الأمان)
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+</script>
+  <!-- نموذج إضافة مستخدم -->
+<div id="addUserModal" style="display: none; background-color: rgba(0,0,0,0.6); position: fixed; top: 0; right: 0; width: 100%; height: 100%; justify-content: center; align-items: center;">
+  <div style="background: rgb(134, 25, 116); padding: 2rem; border-radius: 12px; width: 400px;">
+    <h3 style="margin-bottom: 1rem;">إضافة مستخدم جديد</h3>
+    <input type="text" id="newUserName" placeholder="الاسم" class="form-control" style="margin-bottom: 1rem; width: 100%;" />
+    <input type="email" id="newUserEmail" placeholder="البريد الإلكتروني" class="form-control" style="margin-bottom: 1rem; width: 100%;" />
+    <input type="password" id="newUserPassword" placeholder="كلمة المرور" class="form-control" style="margin-bottom: 1rem; width: 100%;" />
+    <input type="text" id="newUserSection" placeholder="الشعبة" class="form-control" style="margin-bottom: 1rem; width: 100%;" />
+    <input type="text" id="newUserPhone" placeholder="رقم الهاتف" class="form-control" style="margin-bottom: 1rem; width: 100%;" />
+    <div style="display: flex; justify-content: space-between;">
+      <button onclick="createUser()" class="btn">إنشاء</button>
+      <button onclick="hideAddUserForm()" class="btn logout-btn">إلغاء</button>
+    </div>
+  </div>
+</div>
+<!-- Modal تعديل المستخدم -->
+<div id="editModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>تعديل بيانات المستخدم</h3>
+    <form id="editForm">
+      <input type="hidden" id="editUserId" />
+
+      <label>الاسم الكامل:</label>
+      <input type="text" id="editUserName" class="form-control" required />
+
+      <label>البريد الإلكتروني:</label>
+      <input type="email" id="editUserEmail" class="form-control" required />
+
+      <label>الشعبة:</label>
+      <input type="text" id="editUserSection" class="form-control" />
+
+      <label>رقم الهاتف:</label>
+      <input type="text" id="editUserPhone" class="form-control" />
+
+      <div class="modal-actions">
+        <button type="submit" class="btn save-btn">حفظ التعديلات</button>
+        <button type="button" class="btn cancel-btn" onclick="closeEditModal()">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="addSubjectModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>إضافة مادة جديدة</h3>
+    <form onsubmit="createSubject(event)">
+      <label>الشعبة:</label>
+      <select id="newSubjectSection" required>
+  <option value="">-- اختر الشعبة --</option>
+  <option value="math">شعبة الرياضيات</option>
+  <option value="science">شعبة العلوم</option>
+  <option value="eco">شعبة الاقتصاد</option>
+  <option value="tech">شعبة التقنية</option>
+  <option value="lettres">شعبة الآداب</option>
+  <option value="info">شعبة الإعلامية</option>
+</select>
+
+      <label>اسم المادة:</label>
+      <input type="text" id="newSubjectName" required />
+
+      <div class="modal-actions">
+        <button type="submit" class="btn save-btn">إضافة</button>
+        <button type="button" class="btn cancel-btn" onclick="closeAddSubjectModal()">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- نافذة إضافة أو تعديل مادة -->
+<div id="subjectModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 id="subjectModalTitle">إضافة مادة</h3>
+    <input type="hidden" id="editSubjectId" />
+    <label for="subjectName">اسم المادة:</label>
+    <input type="text" id="subjectName" class="form-control" />
+
+    <div class="modal-actions">
+      <button onclick="saveSubject()" class="btn save-btn">حفظ</button>
+      <button onclick="closeSubjectModal()" class="btn cancel-btn">إلغاء</button>
+    </div>
+  </div>
+</div>
+<div id="editModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:#000000aa; justify-content:center; align-items:center;">
+  <div style="background:#650eb6; padding:20px; border-radius:10px; width:300px; text-align:right;">
+    <h3>تعديل المادة</h3>
+    <input type="hidden" id="editId">
+    <label for="editName">اسم المادة:</label>
+    <input type="text" id="editName" style="width:100%; padding:5px; margin-top:5px;"><br><br>
+    <label for="editSection">الشعبة:</label>
+    <input type="text" id="editSection" style="width:100%; padding:5px; margin-top:5px;"><br><br>
+    <button onclick="submitEdit()">حفظ</button>
+    <button onclick="closeEditModal()">إلغاء</button>
+  </div>
+</div>
+<script>
+    // فتح نافذة التعديل وتعبئة البيانات
+function openEditModal(id, name, email, section, phone) {
+  document.getElementById('editUserId').value = id;
+  document.getElementById('editUserName').value = name;
+  document.getElementById('editUserEmail').value = email;
+  document.getElementById('editUserSection').value = section;
+  document.getElementById('editUserPhone').value = phone;
+
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+// إغلاق النافذة
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+// إرسال التعديل
+document.getElementById('editForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById('editUserId').value;
+  const name = document.getElementById('editUserName').value.trim();
+  const email = document.getElementById('editUserEmail').value.trim();
+  const section = document.getElementById('editUserSection').value.trim();
+  const phone = document.getElementById('editUserPhone').value.trim();
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, section, phone })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message);
+
+    Toastify({
+      text: "تم تحديث المستخدم بنجاح",
+      duration: 3000,
+      gravity: "top",
+      position: "center",
+      backgroundColor: "#4BB543",
+    }).showToast();
+
+    closeEditModal();
+    fetchUsers(); // إعادة تحميل جدول المستخدمين
+
+  } catch (err) {
+    console.error(err);
+    alert("فشل تعديل المستخدم: " + err.message);
+  }
+}); 
+</script>
+<script>
+  const sections = [
+    { key: 'math', label: 'شعبة الرياضيات' },
+    { key: 'science', label: 'شعبة العلوم' },
+    { key: 'eco', label: 'شعبة الاقتصاد' },
+    { key: 'tech', label: 'شعبة التقنية' },
+    { key: 'lettres', label: 'شعبة الآداب' },
+    { key: 'info', label: 'شعبة الإعلامية' }
+  ];
+
+   window.addEventListener('DOMContentLoaded', () => {
+    const selector = document.getElementById('sectionSelector');
+    selector.innerHTML = '<option value="">اختر الشعبة</option>';
+    sections.forEach(sec => {
+      const option = document.createElement('option');
+      option.value = sec.key;       // use the key for API calls
+      option.textContent = sec.label;  // show the Arabic label in dropdown
+      selector.appendChild(option);
+    });
+
+// Load subjects when selection changes
+    selector.addEventListener('change', loadSubjectsForSection);
+});
+
+  async function loadSubjectsForSection() {
+    const section = document.getElementById('sectionSelector').value;
+    if (!section) {
+      // Clear the table if no section selected
+      document.getElementById('subjectsTableBody').innerHTML = '';
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/subjects?section=${encodeURIComponent(section)}`);
+      
+      if (!res.ok) {
+        console.error("HTTP error", res.status);
+        alert('حدث خطأ في جلب المواد');
+        return;
+      }
+
+      const subjects = await res.json();
+
+      const tbody = document.getElementById('subjectsTableBody');
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(subjects) || subjects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">لا توجد مواد لهذه الشعبة</td></tr>';
+        return;
+      }
+
+      subjects.forEach((subject, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${subject.name}</td>
+          <td>
+            <button class="edit-btn" onclick="editSubject(${subject.id}, '${subject.name}')">تعديل</button>
+            <button class="delete-btn" onclick="deleteSubject(${subject.id})">حذف</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      alert('حدث خطأ في الاتصال بالخادم');
+    }
+  }
+</script>
+<script>
+  const links = document.querySelectorAll('.sidebar ul li a');
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const text = link.textContent.trim();
+      const dashboard = document.getElementById('mainDashboard');
+      const users = document.getElementById('manageUsersSection');
+      const subjects = document.getElementById('manageSubjectsSection');
+
+      // Hide all
+      dashboard.style.display = 'none';
+      users.style.display = 'none';
+      subjects.style.display = 'none';
+      document.getElementById('managePaymentsSection').style.display = 'none';
+
+      // Show selected
+      if (text === 'إحصائيات عامة') dashboard.style.display = 'block';
+      else if (text === 'إدارة المستخدمين') users.style.display = 'block';
+      else if (text === 'إدارة المواد') subjects.style.display = 'block';
+      else if (text === 'إدارة المدفوعات') {
+      document.getElementById('managePaymentsSection').style.display = 'block';
+      loadPendingPayments(); // Load payments when section is shown
+      }
+    });
+  });
+</script>
+<script>
+    const allSubjects = {
+      math: ["رياضيات", "فيزياء", "علوم الحياة", "فرنسية", "إنقليزية", "فلسفة"],
+      science: ["علوم تجريبية", "فيزياء", "رياضيات", "فرنسية", "إنقليزية", "فلسفة"],
+      tech: ["تكنولوجيا", "فيزياء", "رياضيات", "فرنسية", "إنقليزية", "فلسفة"],
+      eco: ["اقتصاد", "تصرف", "رياضيات", "فرنسية", "إنقليزية", "فلسفة"],
+      lettres: ["عربية", "فلسفة", "تاريخ", "جغرافيا", "فرنسية", "إنقليزية"],
+      info: ["إعلامية", "رياضيات", "فيزياء", "فرنسية", "إنقليزية", "فلسفة"]
+    };
+
+function getSubjectIcon(subject) {
+  switch (subject) {
+    case "رياضيات": return "fas fa-square-root-variable";
+    case "فيزياء": return "fas fa-atom";
+    case "علوم الحياة": return "fas fa-dna";
+    case "تكنولوجيا": return "fas fa-microchip";
+    case "اقتصاد": return "fas fa-chart-line";
+    case "تصرف": return "fas fa-briefcase";
+    case "عربية": return "fas fa-feather";
+    case "فلسفة": return "fas fa-brain";
+    case "تاريخ": return "fas fa-landmark";
+    case "جغرافيا": return "fas fa-globe-africa";
+    case "فرنسية": return "fas fa-language";
+    case "إنقليزية": return "fas fa-language";
+    case "إعلامية": return "fas fa-laptop-code";
+    default: return "fas fa-book";
+  }
+}
+    function displaySubjects() {
+  const section = document.getElementById('section')?.value;
+  const container = document.getElementById('subjectsList');
+  container.innerHTML = '';
+
+  const subjects = allSubjects[section];
+  if (!subjects) {
+    container.innerHTML = '<p>لا توجد مواد لهذه الشعبة.</p>';
+    return;
+  }
+
+  subjects.forEach(subject => {
+    const iconClass = getSubjectIcon(subject);
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.innerHTML = `<i class="${iconClass}"></i><span>${subject}</span>`;
+    container.appendChild(card);
+  });
+}
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    }
+
+    function switchView(view) {
+      document.getElementById('mainDashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+      document.getElementById('manageUsersSection').style.display = view === 'users' ? 'block' : 'none';
+      document.getElementById('manageSubjectsSection').style.display = view === 'subjects' ? 'block' : 'none';
+      document.getElementById('managePaymentsSection').style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('userCount').textContent = '124';
+  document.getElementById('subjectCount').textContent = '36';
+  document.getElementById('videoCount').textContent = '34';
+  document.getElementById('quizCount').textContent = '16';
+
+  Toastify({
+    text: "مرحباً بك في لوحة تحكم المشرف",
+    duration: 3000,
+    gravity: "top",
+    position: "center",
+    backgroundColor: "linear-gradient(to right, #6C4AB6, #8D72E1)",
+  }).showToast();
+
+  const sectionSelect = document.getElementById('section');
+if (sectionSelect) {
+  sectionSelect.value = 'math';
+  displaySubjects();
+} else {
+  console.error('Section selector not found!');
+}
+});
+  </script>
+
+  <script>
+   async function loadSubjectsForSection() {
+    const section = document.getElementById('sectionSelector').value;
+    if (!section) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/subjects?section=${encodeURIComponent(section)}`);
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error("API did not return an array");
+        return;
+      }
+
+      const tbody = document.getElementById('subjectsTableBody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">لا توجد مواد لهذه الشعبة</td></tr>';
+        return;
+      }
+
+      data.forEach((subject, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${subject.name}</td>
+          <td>${subject.section}</td>
+          <td>
+            <button class="delete-btn" onclick="deleteSubject(${subject.id})">حذف</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } catch (err) {
+      console.error("حدث خطأ أثناء جلب المواد:", err);
+      alert("⚠️ فشل في جلب المواد");
+    }
+  }
+</script>
+
+<script>
+async function deleteSubject(id) {
+  if (!confirm('هل أنت متأكد من حذف هذه المادة؟')) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/admin/subjects/${id}`, {
+      method: 'DELETE',
+    });
+
+    const result = await res.json();
+    alert(result.message);
+    loadSubjectsForSection(); // reload after delete
+  } catch (err) {
+    console.error('Error deleting subject:', err);
+    alert('حدث خطأ أثناء حذف المادة');
+  }
+}
+
+async function editSubject(id, currentName, section) {
+  const newName = prompt("أدخل الاسم الجديد للمادة:", currentName);
+  if (!newName) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/admin/subjects/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName, section })
+    });
+
+    const result = await res.json();
+    alert(result.message);
+    loadSubjectsForSection(); // reload
+  } catch (err) {
+    console.error('Error editing subject:', err);
+    alert('حدث خطأ أثناء تعديل المادة');
+  }
+}
+</script>
+<script>
+  function editSubject(id, name, section) {
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editSection').value = section;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  async function submitEdit() {
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('editName').value;
+    const section = document.getElementById('editSection').value;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/subjects/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, section })
+      });
+
+      const result = await res.json();
+      alert(result.message || 'تم التعديل');
+      closeEditModal();
+      loadSubjectsForSection(); // Refresh table
+    } catch (err) {
+      console.error('Error editing subject:', err);
+      alert('فشل في تعديل المادة');
+    }
+  }
+
+  async function deleteSubject(id) {
+    if (!confirm('هل أنت متأكد من حذف هذه المادة؟')) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/subjects/${id}`, {
+        method: 'DELETE',
+      });
+      const result = await res.json();
+      alert(result.message || 'تم الحذف');
+      loadSubjectsForSection();
+    } catch (err) {
+      console.error('Error deleting subject:', err);
+      alert('فشل في حذف المادة');
+    }
+  }
+
+  function showAddSubjectForm() {
+  document.getElementById('addSubjectModal').style.display = 'flex';
+}
+
+function closeAddSubjectModal() {
+  document.getElementById('addSubjectModal').style.display = 'none';
+}
+
+async function createSubject(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('newSubjectName').value.trim();
+    const section = document.getElementById('newSubjectSection').value;
+
+    if (!name || !section) {
+      alert("يرجى إدخال اسم المادة واختيار الشعبة");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/subjects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, section })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("🚨 Server returned an error:", result);
+        throw new Error(result.message || 'خطأ غير معروف من الخادم');
+      }
+
+      alert(result.message || '✅ تمت إضافة المادة بنجاح');
+      closeAddSubjectModal();
+       await loadSubjectsForSection();
+      document.getElementById('newSubjectName').value = '';
+      document.getElementById('newSubjectSection').value = '';
+    } catch (err) {
+      console.error("❌ Frontend error:", err);
+      alert("❌ حدث خطأ أثناء إضافة المادة: " + err.message);
+    }
+  }
+</script>
+<script>
+const API_BASE = 'http://localhost:5000/api/admin';
+const token = localStorage.getItem('token');
+
+async function loadPendingPayments() {
+  const tbody = document.getElementById('admin-payments-body');
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center">جاري التحميل...</td></tr>`;
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE}/payments`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payments');
+    }
+
+    const payments = await response.json();
+
+    if (!payments || payments.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center">لا توجد عمليات دفع</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = ''; // Clear loading message
+
+    payments.forEach((payment, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>
+  ${payment.name || 'غير معروف'}<br>
+  <small>${payment.email || ''}</small>
+</td>
+        <td>${payment.amount} د.ت</td>
+        <td>${payment.method || 'غير معروف'}</td>
+        <td>${payment.reference || '—'}</td>
+        <td>${new Date(payment.createdAt).toLocaleString('ar-TN')}</td>
+        <td class="payment-status-${payment.status}">
+          ${getStatusText(payment.status)}
+        </td>
+        <td>
+          ${payment.status === 'pending' ? `
+            <button class="btn-success" onclick="confirmPayment(${payment.id})">تأكيد</button>
+            <button class="btn-danger" onclick="refusePayment(${payment.id})">رفض</button>
+          ` : '—'}
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error('Error loading payments:', error);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;color:#e74c3c">
+          خطأ في تحميل البيانات: ${error.message}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function getStatusText(status) {
+  switch(status) {
+    case 'pending': return '🕓 قيد الانتظار';
+    case 'success': return '✅ مكتمل';
+    case 'refused': return '❌ مرفوض';
+    default: return status;
+  }
+}
+async function confirmPayment(paymentId) {
+  const confirmBtn = document.querySelector(`button[onclick="confirmPayment(${paymentId})"]`);
+  const originalText = confirmBtn.innerHTML;
+  
+  try {
+    // Show loading state
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    confirmBtn.disabled = true;
+
+    const response = await fetch(`${API_BASE}/payments/${paymentId}/confirm`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'فشل في تأكيد الدفع');
+    }
+
+    // Show success message with verified balance
+    Toastify({
+      text: `✅ ${result.message} | الرصيد الجديد: ${result.newBalance} د.ت`,
+      duration: 5000,
+      backgroundColor: "#4BB543",
+      className: "toastify-success"
+    }).showToast();
+
+    // Refresh payments list
+    loadPendingPayments();
+
+    // If on user dashboard, update wallet display
+    if (typeof updateWalletDisplay === "function") {
+      updateWalletDisplay(result.newBalance);
+    }
+
+  } catch (err) {
+    Toastify({
+      text: `❌ ${err.message}`,
+      duration: 5000,
+      backgroundColor: "#e74c3c",
+      className: "toastify-error"
+    }).showToast();
+  } finally {
+    confirmBtn.innerHTML = originalText;
+    confirmBtn.disabled = false;
+  }
+}
+
+async function refusePayment(paymentId) {
+  if (!confirm('هل أنت متأكد من رفض هذه العملية؟')) return;
+  
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('يجب تسجيل الدخول أولاً');
+    }
+
+    const response = await fetch(`${API_BASE}/payments/${paymentId}/refuse`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'فشل في رفض الدفع');
+    }
+
+    const data = await response.json();
+    
+    Toastify({
+      text: data.message || 'تم رفض الدفع بنجاح',
+      duration: 3000,
+      backgroundColor: "#f39c12"
+    }).showToast();
+
+    loadPendingPayments();
+
+  } catch (err) {
+    console.error('Error refusing payment:', err);
+    Toastify({
+      text: `خطأ: ${err.message}`,
+      duration: 3000,
+      backgroundColor: "#e74c3c"
+    }).showToast();
+  }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Other initialization code...
+  
+  // Check if we're on the payments section
+  if (window.location.hash === '#payments') {
+    document.getElementById('managePaymentsSection').style.display = 'block';
+    loadPendingPayments();
+  }
+});
+</script>
+
+</body>
+</html>

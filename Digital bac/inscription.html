@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>التسجيل في Digital Bac | منصة الباكالوريا الرقمية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6C4AB6;
+      --primary-light: #8D72E1;
+      --secondary: #FF9B9B;
+      --dark: #2D2727;
+      --light: #F5F5F5;
+      --success: #4BB543;
+      --warning: #FFCC00;
+      --error: #FF3333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+    
+    .container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-content {
+      max-width: 600px;
+      text-align: center;
+      color: white;
+      z-index: 2;
+      animation: fadeInUp 1s ease;
+    }
+    
+    .hero-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 900;
+    }
+    
+    .hero-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    
+    .features-list {
+      text-align: right;
+      margin-top: 2rem;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.8rem 1.2rem;
+      border-radius: 50px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .feature-item i {
+      margin-left: 0.8rem;
+      font-size: 1.2rem;
+    }
+    
+    /* Decorative Elements */
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+    
+    .circle-2 {
+      width: 150px;
+      height: 150px;
+      bottom: 50px;
+      left: 50px;
+    }
+    
+    .circle-3 {
+      width: 80px;
+      height: 80px;
+      top: 40%;
+      left: 30%;
+    }
+    
+    /* Form Section */
+    .form-section {
+      width: 100%;
+      max-width: 500px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-color: white;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+      z-index: 10;
+      position: relative;
+    }
+    
+    .form-header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .form-header h2 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-header p {
+      color: #666;
+    }
+    
+    .logo {
+  height: 180px; /* or try 150px or 180px */
+  width: auto;
+  display: block;
+  margin: 0 auto 1rem;
+   
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Tajawal', sans-serif;
+      transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(108, 74, 182, 0.2);
+      outline: none;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #999;
+    }
+    
+    .select-wrapper {
+      position: relative;
+    }
+    
+    .select-wrapper::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      pointer-events: none;
+    }
+    
+    select.form-control {
+      appearance: none;
+      padding-left: 40px;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 74, 182, 0.3);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .login-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #666;
+    }
+    
+    .login-link a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Form Validation */
+    .error-message {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+    
+    .form-group.error .error-message {
+      display: block;
+    }
+    
+    .form-group.error .form-control {
+      border-color: var(--error);
+    }
+    
+    .form-group.success .form-control {
+      border-color: var(--success);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+  .container {
+    height: 100vh !important;
+    min-height: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+  }
+  .form-section,
+  .hero-section {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+  .form-section {
+    margin: 0 auto !important;
+  }
+}
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    /* Floating Animation for Feature Icons */
+    .feature-item i {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .feature-item:nth-child(2) i {
+      animation-delay: 0.2s;
+    }
+    
+    .feature-item:nth-child(3) i {
+      animation-delay: 0.4s;
+    }
+    
+    /* Loading State */
+    .btn.loading {
+      position: relative;
+      pointer-events: none;
+    }
+    
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      border: 3px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Success Message */
+    .success-message {
+      display: none;
+      text-align: center;
+      animation: fadeInUp 0.5s ease;
+    }
+    
+    .success-message i {
+      font-size: 4rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+      animation: bounce 0.5s ease;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-20px);
+      }
+      60% {
+        transform: translateY(-10px);
+      }
+    }
+    #phone {
+  direction: rtl;
+  text-align: right;
+}
+
+#phone::placeholder {
+  direction: rtl;
+  text-align: right;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+      <div class="circle circle-3"></div>
+      
+      <div class="hero-content">
+        <img src="image/logo0.png" alt="Digital Bac Logo" class="logo">
+        <h1>انضم إلى منصة الباكالوريا الرقمية</h1>
+        <p>أفضل منصة تعليمية لتحضير شهادة البكالالوريا في تونس مع دروس مفصلة، تمارين تفاعلية، واختبارات محاكية للباكالوريا</p>
+        
+        <div class="features-list">
+          <div class="feature-item">
+            <span>دروس مصورة عالية الجودة</span>
+            <i class="fas fa-video"></i>
+          </div>
+          <div class="feature-item">
+            <span>بنك أسئلة يحتوي على أكثر من 5000 سؤال</span>
+            <i class="fas fa-database"></i>
+          </div>
+          <div class="feature-item">
+            <span>تصحيح آلي فوري للاختبارات</span>
+            <i class="fas fa-robot"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="form-header">
+        <h2>إنشاء حساب جديد</h2>
+        <p>املأ النموذج أدناه لإنشاء حسابك</p>
+      </div>
+      
+      <form id="registrationForm">
+        <div class="form-group">
+          <label for="fullName">الاسم الكامل</label>
+          <input type="text" id="fullName" class="form-control" placeholder="أدخل اسمك الكامل" required>
+          <i class="fas fa-user input-icon"></i>
+          <div class="error-message">الاسم الكامل مطلوب</div>
+        </div>
+
+        <div class="form-group">
+  <label for="phone">رقم الهاتف</label>
+  <input type="tel" id="phone" class="form-control" placeholder="أدخل رقم هاتفك" required pattern="^[0-9]{8,15}$">
+  <i class="fas fa-phone input-icon"></i>
+  <div class="error-message">رقم الهاتف غير صالح</div>
+</div>
+
+<div class="form-group">
+  <label for="school">المعهد</label>
+  <input type="text" id="school" class="form-control" placeholder="أدخل اسم المعهد" required>
+  <i class="fas fa-school input-icon"></i>
+  <div class="error-message">اسم المعهد مطلوب</div>
+</div>
+
+        
+        <div class="form-group">
+          <label for="email">البريد الإلكتروني</label>
+          <input type="email" id="email" class="form-control" placeholder="example@email.com" required>
+          <i class="fas fa-envelope input-icon"></i>
+          <div class="error-message">البريد الإلكتروني غير صالح</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">كلمة المرور</label>
+          <input type="password" id="password" class="form-control" placeholder="كلمة مرور قوية" required minlength="8">
+          <i class="fas fa-lock input-icon"></i>
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('password')"></i>
+          <div class="error-message">كلمة المرور يجب أن تكون 8 أحرف على الأقل</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">تأكيد كلمة المرور</label>
+          <input type="password" id="confirmPassword" class="form-control" placeholder="أعد إدخال كلمة المرور" required>
+          <i class="fas fa-lock input-icon"></i>
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword')"></i>
+          <div class="error-message">كلمة المرور غير متطابقة</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="branch">الشعبة الدراسية</label>
+          <div class="select-wrapper">
+            <select id="branch" class="form-control" required>
+              <option value="" disabled selected>اختر شعبتك</option>
+              <option value="اقتصاد وتصرف">شعبة الإقتصاد و التصرف</option>
+              <option value="رياضيات">شعبة الرياضيات</option>
+              <option value="آداب">شعبة الآداب</option>
+              <option value="علوم إعلامية">شعبة علوم الإعلامية</option>
+              <option value="علوم تقنية">شعبة العلوم التقنية</option>
+              <option value="علوم تجريبية">شعبة العلوم التجريبية</option>
+            </select>
+          </div>
+          <div class="error-message">الشعبة الدراسية مطلوبة</div>
+        </div>
+        
+        <button type="submit" class="btn" id="submitBtn">تسجيل الحساب</button>
+        
+        <div class="login-link">
+          لديك حساب بالفعل؟ <a href="login.html">سجل الدخول هنا</a>
+        </div>
+      </form>
+      
+      <div class="success-message" id="successMessage">
+        <i class="fas fa-check-circle"></i>
+        <h3>تم إنشاء حسابك بنجاح!</h3>
+        <p>جاري تحويلك إلى لوحة التحكم...</p>
+        
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    
+    // DOM Elements
+    const form = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
+    
+    // Toggle Password Visibility
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const icon = field.nextElementSibling;
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        field.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+    
+    // Form Validation
+    function validateForm() {
+      let isValid = true;
+      const formGroups = document.querySelectorAll('.form-group');
+      
+      // Reset validation
+      formGroups.forEach(group => {
+        group.classList.remove('error', 'success');
+      });
+      
+      // Validate Full Name
+      const fullName = document.getElementById('fullName');
+      if (fullName.value.trim() === '') {
+        fullName.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        fullName.parentElement.classList.add('success');
+      }
+      // Validate Phone
+const phone = document.getElementById('phone');
+const phoneRegex = /^[0-9]{8,15}$/;
+if (!phoneRegex.test(phone.value)) {
+  phone.parentElement.classList.add('error');
+  isValid = false;
+} else {
+  phone.parentElement.classList.add('success');
+}
+      
+// Validate School (المعهد)
+const school = document.getElementById('school');
+if (school.value.trim() === '') {
+  school.parentElement.classList.add('error');
+  isValid = false;
+} else {
+  school.parentElement.classList.add('success');
+}
+
+      // Validate Email
+      const email = document.getElementById('email');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.value)) {
+        email.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        email.parentElement.classList.add('success');
+      }
+      
+      // Validate Password
+      const password = document.getElementById('password');
+      if (password.value.length < 8) {
+        password.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        password.parentElement.classList.add('success');
+      }
+      
+      // Validate Confirm Password
+      const confirmPassword = document.getElementById('confirmPassword');
+      if (confirmPassword.value !== password.value) {
+        confirmPassword.parentElement.classList.add('error');
+        isValid = false;
+      } else if (password.value.length >= 8) {
+        confirmPassword.parentElement.classList.add('success');
+      }
+      
+      // Validate Branch
+      const branch = document.getElementById('branch');
+      if (branch.value === '' || branch.value === null) {
+        branch.parentElement.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        branch.parentElement.parentElement.classList.add('success');
+      }
+      
+      return isValid;
+    }
+    
+    
+ // Form Submission
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!validateForm()) {
+    return;
+  }
+
+  const fullName = document.getElementById('fullName').value;
+  const phone = document.getElementById('phone').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const section = document.getElementById('branch').value; // renamed here!
+  const school = document.getElementById('school').value;
+
+  // Show loading state
+  submitBtn.classList.add('loading');
+  submitBtn.disabled = true;
+
+  try {
+    // Send POST request to your backend
+    const response = await fetch('http://localhost:5000/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: fullName,
+        email,
+        password,
+        phone,
+        section,
+        school 
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Registration failed');
+    }
+
+    // Show success message
+    form.style.display = 'none';
+    successMessage.style.display = 'block';
+
+    // Redirect after delay
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 2000);
+
+  } catch (error) {
+    // Handle errors
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+
+    alert(error.message);
+        
+        let errorMessage = "حدث خطأ أثناء التسجيل";
+        
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = "هذا البريد الإلكتروني مستخدم بالفعل";
+            document.getElementById('email').parentElement.classList.add('error');
+            document.getElementById('email').parentElement.querySelector('.error-message').textContent = errorMessage;
+            break;
+          case 'auth/invalid-email':
+            errorMessage = "البريد الإلكتروني غير صالح";
+            document.getElementById('email').parentElement.classList.add('error');
+            document.getElementById('email').parentElement.querySelector('.error-message').textContent = errorMessage;
+            break;
+          case 'auth/weak-password':
+            errorMessage = "كلمة المرور ضعيفة (يجب أن تكون 8 أحرف على الأقل)";
+            document.getElementById('password').parentElement.classList.add('error');
+            document.getElementById('password').parentElement.querySelector('.error-message').textContent = errorMessage;
+            break;
+          default:
+            errorMessage = error.message;
+        }
+        
+        alert(errorMessage);
+      }
+    });
+    
+    // Real-time validation
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+          this.parentElement.classList.remove('error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
